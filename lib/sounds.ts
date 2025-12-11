@@ -24,8 +24,7 @@ export function playCorrectSound() {
     oscillator.frequency.setValueAtTime(783.99, ctx.currentTime + 0.2); // G5
 
     gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
-    gainNode.gain.exponentialDecayTo?.(0.01, ctx.currentTime + 0.4) ||
-      gainNode.gain.setValueAtTime(0.01, ctx.currentTime + 0.4);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
 
     oscillator.start(ctx.currentTime);
     oscillator.stop(ctx.currentTime + 0.4);
