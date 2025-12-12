@@ -44,10 +44,10 @@ const games = [
     color: "bg-purple",
   },
   {
-    name: "Animal Sounds",
-    emoji: "🔊",
-    description: "Match the sounds!",
-    href: "/animals",
+    name: "Tracing",
+    emoji: "✏️",
+    description: "Draw letters!",
+    href: "/tracing",
     color: "bg-yellow",
   },
   {
