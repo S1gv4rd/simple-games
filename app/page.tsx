@@ -22,6 +22,41 @@ const games = [
     href: "/colors",
     color: "bg-pink",
   },
+  {
+    name: "Matching",
+    emoji: "🃏",
+    description: "Find the pairs!",
+    href: "/matching",
+    color: "bg-orange",
+  },
+  {
+    name: "Sorting",
+    emoji: "📏",
+    description: "Big or small?",
+    href: "/sorting",
+    color: "bg-green",
+  },
+  {
+    name: "Patterns",
+    emoji: "🧩",
+    description: "What comes next?",
+    href: "/patterns",
+    color: "bg-purple",
+  },
+  {
+    name: "Animal Sounds",
+    emoji: "🔊",
+    description: "Match the sounds!",
+    href: "/animals",
+    color: "bg-yellow",
+  },
+  {
+    name: "Numbers",
+    emoji: "🔢",
+    description: "Learn 1 to 10!",
+    href: "/numbers",
+    color: "bg-red",
+  },
 ];
 
 export default function Home() {
@@ -37,17 +72,17 @@ export default function Home() {
         Pick a game!
       </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-5xl px-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 w-full max-w-6xl px-4">
         {games.map((game, index) => (
           <Link
             key={game.name}
             href={game.href}
-            className={`game-button ${game.color} flex flex-col items-center justify-center p-10 md:p-12 rounded-[32px] shadow-lg hover:shadow-xl hover:scale-105 transition-all text-white no-underline pop-in`}
-            style={{ animationDelay: `${0.2 + index * 0.1}s` }}
+            className={`game-button ${game.color} flex flex-col items-center justify-center p-6 md:p-8 rounded-[24px] shadow-lg hover:shadow-xl hover:scale-105 transition-all text-white no-underline pop-in`}
+            style={{ animationDelay: `${0.1 + index * 0.05}s` }}
           >
-            <span className="text-7xl md:text-8xl mb-6">{game.emoji}</span>
-            <span className="text-3xl md:text-4xl font-bold">{game.name}</span>
-            <span className="text-xl md:text-2xl opacity-90 mt-2">{game.description}</span>
+            <span className="text-5xl md:text-6xl mb-3">{game.emoji}</span>
+            <span className="text-xl md:text-2xl font-bold text-center">{game.name}</span>
+            <span className="text-sm md:text-base opacity-90 mt-1 text-center">{game.description}</span>
           </Link>
         ))}
       </div>
