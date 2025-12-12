@@ -3,23 +3,21 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import BackButton from "@/components/BackButton";
 import Celebration from "@/components/Celebration";
-import { playCorrectSound, playClickSound } from "@/lib/sounds";
+import { playCorrectSound } from "@/lib/sounds";
 
 const TOTAL_ROUNDS = 10;
 
 const tracingItems = [
-  { char: "A", path: "M 50 180 L 100 20 L 150 180 M 70 120 L 130 120" },
-  { char: "B", path: "M 50 20 L 50 180 M 50 20 L 120 20 Q 160 20 160 60 Q 160 100 120 100 L 50 100 M 50 100 L 130 100 Q 170 100 170 140 Q 170 180 130 180 L 50 180" },
-  { char: "C", path: "M 160 50 Q 100 0 50 50 Q 0 100 50 150 Q 100 200 160 150" },
-  { char: "1", path: "M 70 50 L 100 20 L 100 180 M 60 180 L 140 180" },
-  { char: "2", path: "M 50 60 Q 50 20 100 20 Q 150 20 150 60 Q 150 100 50 180 L 150 180" },
-  { char: "3", path: "M 50 20 L 150 20 L 100 90 Q 160 90 160 135 Q 160 180 100 180 Q 50 180 50 150" },
-  { char: "O", path: "M 100 20 Q 170 20 170 100 Q 170 180 100 180 Q 30 180 30 100 Q 30 20 100 20" },
-  { char: "L", path: "M 60 20 L 60 180 L 150 180" },
-  { char: "T", path: "M 40 20 L 160 20 M 100 20 L 100 180" },
-  { char: "X", path: "M 50 20 L 150 180 M 150 20 L 50 180" },
-  { char: "V", path: "M 40 20 L 100 180 L 160 20" },
-  { char: "4", path: "M 120 20 L 40 120 L 160 120 M 120 60 L 120 180" },
+  { char: "A", color: "#ef476f" },
+  { char: "B", color: "#ff9e00" },
+  { char: "C", color: "#fee440" },
+  { char: "D", color: "#00f5d4" },
+  { char: "E", color: "#00bbf9" },
+  { char: "1", color: "#9b5de5" },
+  { char: "2", color: "#ff6b9d" },
+  { char: "3", color: "#00bbf9" },
+  { char: "4", color: "#00f5d4" },
+  { char: "5", color: "#fee440" },
 ];
 
 function generateQuestion() {
@@ -34,15 +32,15 @@ export default function TracingGame() {
   const [round, setRound] = useState(1);
   const [gameComplete, setGameComplete] = useState(false);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [paths, setPaths] = useState<string[]>([]);
-  const [currentPath, setCurrentPath] = useState<string>("");
+  const [points, setPoints] = useState<{ x: number; y: number }[]>([]);
+  const [allStrokes, setAllStrokes] = useState<{ x: number; y: number }[][]>([]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [canvasSize, setCanvasSize] = useState({ width: 300, height: 300 });
+  const [canvasSize, setCanvasSize] = useState({ width: 280, height: 280 });
 
   // Set canvas size based on screen
   useEffect(() => {
     const updateSize = () => {
-      const size = Math.min(window.innerWidth - 48, 300);
+      const size = Math.min(window.innerWidth - 64, 320);
       setCanvasSize({ width: size, height: size });
     };
     updateSize();
@@ -66,73 +64,95 @@ export default function TracingGame() {
     };
   }, [started, gameComplete]);
 
-  // Draw template and user strokes
+  // Draw everything
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Clear canvas
-    ctx.fillStyle = "#ffffff";
+    // Clear with rounded rect feel
+    ctx.fillStyle = "#fafafa";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw template character (light gray, dashed)
-    ctx.strokeStyle = "#e0e0e0";
-    ctx.lineWidth = 40;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.setLineDash([]);
+    // Draw faint grid lines for guidance
+    ctx.strokeStyle = "#f0f0f0";
+    ctx.lineWidth = 1;
+    const mid = canvas.width / 2;
+    ctx.beginPath();
+    ctx.moveTo(mid, 0);
+    ctx.lineTo(mid, canvas.height);
+    ctx.moveTo(0, canvas.height / 2);
+    ctx.lineTo(canvas.width, canvas.height / 2);
+    ctx.stroke();
 
-    // Draw the character as big text
-    ctx.font = `bold ${canvasSize.height * 0.7}px sans-serif`;
+    // Draw the template character
+    const fontSize = canvasSize.height * 0.65;
+    ctx.font = `bold ${fontSize}px system-ui, -apple-system, sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillStyle = "#f0f0f0";
-    ctx.fillText(question.char, canvasSize.width / 2, canvasSize.height / 2);
 
-    // Draw dotted guide
-    ctx.strokeStyle = "#ccc";
-    ctx.lineWidth = 3;
-    ctx.setLineDash([8, 8]);
-    ctx.fillStyle = "transparent";
-    ctx.strokeText(question.char, canvasSize.width / 2, canvasSize.height / 2);
+    // Soft fill
+    ctx.fillStyle = "#e8e8e8";
+    ctx.fillText(question.char, canvasSize.width / 2, canvasSize.height / 2 + 5);
 
-    // Draw user strokes
+    // Dotted outline for tracing guide
+    ctx.strokeStyle = "#d0d0d0";
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 6]);
+    ctx.strokeText(question.char, canvasSize.width / 2, canvasSize.height / 2 + 5);
     ctx.setLineDash([]);
-    ctx.strokeStyle = "#9b5de5";
-    ctx.lineWidth = 8;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
 
-    paths.forEach((pathData) => {
-      const points = pathData.split(" ");
-      if (points.length < 2) return;
+    // Draw all completed strokes with gradient effect
+    allStrokes.forEach((stroke) => {
+      if (stroke.length < 2) return;
+
+      ctx.strokeStyle = question.color;
+      ctx.lineWidth = 12;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.shadowColor = question.color;
+      ctx.shadowBlur = 8;
+
       ctx.beginPath();
-      const [x, y] = points[0].split(",").map(Number);
-      ctx.moveTo(x, y);
-      for (let i = 1; i < points.length; i++) {
-        const [px, py] = points[i].split(",").map(Number);
-        ctx.lineTo(px, py);
+      ctx.moveTo(stroke[0].x, stroke[0].y);
+      for (let i = 1; i < stroke.length; i++) {
+        ctx.lineTo(stroke[i].x, stroke[i].y);
       }
       ctx.stroke();
+      ctx.shadowBlur = 0;
     });
 
-    // Draw current path
-    if (currentPath) {
-      const points = currentPath.split(" ");
-      if (points.length >= 2) {
-        ctx.beginPath();
-        const [x, y] = points[0].split(",").map(Number);
-        ctx.moveTo(x, y);
-        for (let i = 1; i < points.length; i++) {
-          const [px, py] = points[i].split(",").map(Number);
-          ctx.lineTo(px, py);
-        }
-        ctx.stroke();
+    // Draw current stroke
+    if (points.length >= 2) {
+      ctx.strokeStyle = question.color;
+      ctx.lineWidth = 12;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.shadowColor = question.color;
+      ctx.shadowBlur = 10;
+
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+      for (let i = 1; i < points.length; i++) {
+        ctx.lineTo(points[i].x, points[i].y);
       }
+      ctx.stroke();
+      ctx.shadowBlur = 0;
     }
-  }, [question, paths, currentPath, canvasSize]);
+
+    // Draw cursor dot when drawing
+    if (isDrawing && points.length > 0) {
+      const lastPoint = points[points.length - 1];
+      ctx.fillStyle = "#ffffff";
+      ctx.shadowColor = question.color;
+      ctx.shadowBlur = 15;
+      ctx.beginPath();
+      ctx.arc(lastPoint.x, lastPoint.y, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+  }, [question, points, allStrokes, canvasSize, isDrawing]);
 
   const getCoordinates = (e: React.TouchEvent | React.MouseEvent) => {
     const canvas = canvasRef.current;
@@ -154,42 +174,40 @@ export default function TracingGame() {
   const handleStart = useCallback((e: React.TouchEvent | React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    playClickSound();
     setIsDrawing(true);
-    const { x, y } = getCoordinates(e);
-    setCurrentPath(`${x},${y}`);
+    const coords = getCoordinates(e);
+    setPoints([coords]);
   }, []);
 
   const handleMove = useCallback((e: React.TouchEvent | React.MouseEvent) => {
     if (!isDrawing) return;
     e.preventDefault();
     e.stopPropagation();
-    const { x, y } = getCoordinates(e);
-    setCurrentPath((prev) => `${prev} ${x},${y}`);
+    const coords = getCoordinates(e);
+    setPoints((prev) => [...prev, coords]);
   }, [isDrawing]);
 
   const handleEnd = useCallback(() => {
     if (!isDrawing) return;
     setIsDrawing(false);
-    if (currentPath) {
-      setPaths((prev) => [...prev, currentPath]);
-      setCurrentPath("");
+    if (points.length > 1) {
+      setAllStrokes((prev) => [...prev, points]);
     }
-  }, [isDrawing, currentPath]);
+    setPoints([]);
+  }, [isDrawing, points]);
 
   const handleDone = useCallback(() => {
-    // Simple check: if user drew something, count it as success
-    if (paths.length > 0) {
+    if (allStrokes.length > 0) {
       playCorrectSound();
       setShowCelebration(true);
       setScore((s) => s + 1);
     }
-  }, [paths]);
+  }, [allStrokes]);
 
   const handleCelebrationComplete = useCallback(() => {
     setShowCelebration(false);
-    setPaths([]);
-    setCurrentPath("");
+    setPoints([]);
+    setAllStrokes([]);
     if (round >= TOTAL_ROUNDS) {
       setGameComplete(true);
     } else {
@@ -199,8 +217,8 @@ export default function TracingGame() {
   }, [round]);
 
   const handleClear = () => {
-    setPaths([]);
-    setCurrentPath("");
+    setPoints([]);
+    setAllStrokes([]);
   };
 
   const startGame = () => {
@@ -209,8 +227,8 @@ export default function TracingGame() {
     setScore(0);
     setRound(1);
     setGameComplete(false);
-    setPaths([]);
-    setCurrentPath("");
+    setPoints([]);
+    setAllStrokes([]);
   };
 
   // Start screen
@@ -218,18 +236,19 @@ export default function TracingGame() {
     return (
       <main className="min-h-screen p-6 flex flex-col items-center justify-center bg-gradient-to-b from-purple/10 to-pink/10">
         <BackButton />
-        <span className="text-8xl mb-6">✏️</span>
-        <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-purple">
-          Tracing Game
+        <div className="text-8xl mb-6 pop-in">✏️</div>
+        <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-purple pop-in" style={{ animationDelay: "0.1s" }}>
+          Tracing
         </h1>
-        <p className="text-xl md:text-2xl text-center mb-8 text-foreground/70">
-          Trace the letters and numbers!
+        <p className="text-xl md:text-2xl text-center mb-8 text-foreground/70 pop-in" style={{ animationDelay: "0.2s" }}>
+          Draw letters and numbers!
         </p>
         <button
           onClick={startGame}
-          className="game-button bg-purple text-white text-2xl font-bold py-6 px-12 rounded-2xl shadow-lg"
+          className="game-button bg-purple text-white text-2xl font-bold py-6 px-12 rounded-2xl shadow-lg pop-in"
+          style={{ animationDelay: "0.3s" }}
         >
-          Start Playing!
+          Start!
         </button>
       </main>
     );
@@ -240,19 +259,19 @@ export default function TracingGame() {
     return (
       <main className="min-h-screen p-6 flex flex-col items-center justify-center bg-gradient-to-b from-purple/10 to-pink/10">
         <BackButton />
-        <span className="text-8xl mb-6 celebrate">🎉</span>
+        <div className="text-8xl mb-6 celebrate">🎉</div>
         <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-purple">
-          Great Writing!
+          Great Job!
         </h1>
         <p className="text-2xl md:text-3xl text-center mb-2 text-foreground">
-          You traced <span className="text-purple font-bold">{score}</span> characters!
+          You traced <span className="text-purple font-bold">{score}</span> of {TOTAL_ROUNDS}!
         </p>
         <div className="text-5xl my-6">
           {score === TOTAL_ROUNDS ? "🌟🌟🌟" : score >= 7 ? "🌟🌟" : score >= 4 ? "🌟" : "💪"}
         </div>
         <button
           onClick={() => setStarted(false)}
-          className="game-button bg-purple text-white text-2xl font-bold py-6 px-12 rounded-2xl shadow-lg mt-4"
+          className="game-button bg-purple text-white text-2xl font-bold py-6 px-12 rounded-2xl shadow-lg"
         >
           Play Again
         </button>
@@ -265,30 +284,43 @@ export default function TracingGame() {
       <BackButton />
       <Celebration show={showCelebration} onComplete={handleCelebrationComplete} />
 
-      <div className="flex justify-between w-full max-w-md mb-4">
-        <span className="bg-white/80 text-foreground px-4 py-2 rounded-full font-bold text-lg">
-          Round {round}/{TOTAL_ROUNDS}
-        </span>
-        <span className="bg-yellow text-foreground px-4 py-2 rounded-full font-bold text-lg">
-          ⭐ {score}
-        </span>
+      {/* Progress bar */}
+      <div className="w-full max-w-sm mb-4">
+        <div className="flex justify-between text-sm font-medium text-foreground/60 mb-1">
+          <span>Round {round}/{TOTAL_ROUNDS}</span>
+          <span>⭐ {score}</span>
+        </div>
+        <div className="h-2 bg-white/50 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-purple rounded-full transition-all duration-300"
+            style={{ width: `${(round / TOTAL_ROUNDS) * 100}%` }}
+          />
+        </div>
       </div>
 
-      <h1 className="text-2xl md:text-4xl font-bold text-center mb-4 text-purple">
-        Trace the letter: <span className="text-pink">{question.char}</span>
-      </h1>
+      {/* Character preview */}
+      <div
+        className="text-6xl font-bold mb-3 pop-in"
+        style={{ color: question.color }}
+      >
+        {question.char}
+      </div>
 
       {/* Canvas */}
       <div
-        className="bg-white rounded-3xl shadow-lg p-2 mb-4"
-        style={{ touchAction: "none" }}
+        className="rounded-3xl shadow-xl overflow-hidden mb-4"
+        style={{
+          touchAction: "none",
+          background: "linear-gradient(145deg, #ffffff, #f5f5f5)",
+          padding: "4px"
+        }}
       >
         <canvas
           ref={canvasRef}
           width={canvasSize.width}
           height={canvasSize.height}
-          className="rounded-2xl"
-          style={{ touchAction: "none" }}
+          className="rounded-2xl cursor-crosshair"
+          style={{ touchAction: "none", display: "block" }}
           onMouseDown={handleStart}
           onMouseMove={handleMove}
           onMouseUp={handleEnd}
@@ -300,19 +332,20 @@ export default function TracingGame() {
       </div>
 
       {/* Buttons */}
-      <div className="flex gap-4">
+      <div className="flex gap-3">
         <button
           onClick={handleClear}
-          className="game-button bg-gray-200 text-foreground text-xl font-bold py-4 px-8 rounded-2xl shadow-lg"
+          className="flex items-center gap-2 bg-white text-foreground/70 text-lg font-semibold py-3 px-6 rounded-xl shadow-md hover:shadow-lg active:scale-95 transition-all"
         >
-          Clear
+          <span>🗑️</span> Clear
         </button>
         <button
           onClick={handleDone}
-          disabled={paths.length === 0}
-          className="game-button bg-green text-white text-xl font-bold py-4 px-8 rounded-2xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={allStrokes.length === 0}
+          className="flex items-center gap-2 text-white text-lg font-semibold py-3 px-8 rounded-xl shadow-md hover:shadow-lg active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          style={{ backgroundColor: allStrokes.length > 0 ? "#00f5d4" : "#ccc" }}
         >
-          Done ✓
+          <span>✓</span> Done
         </button>
       </div>
     </main>
