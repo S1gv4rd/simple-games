@@ -3,51 +3,32 @@
 import { useState, useCallback, useEffect } from "react";
 import BackButton from "@/components/BackButton";
 import Celebration from "@/components/Celebration";
-import ShapeRenderer, { ShapeItem, ShapeType } from "@/components/ShapeRenderer";
 import StartScreen from "@/components/StartScreen";
-import GameComplete from "@/components/GameComplete";
 import { playCorrectSound, playWrongSound, playClickSound } from "@/lib/sounds";
-import { GAME_COLORS, shuffleArray } from "@/lib/gameUtils";
+import { shuffleArray } from "@/lib/gameUtils";
 
 const TOTAL_PAIRS = 6;
 const GRADIENT = "from-orange/10 to-yellow/10";
 
-// Card patterns for matching
-const cardPatterns: ShapeItem[] = [
-  { shape: "circle", color: GAME_COLORS.red },
-  { shape: "circle", color: GAME_COLORS.blue },
-  { shape: "square", color: GAME_COLORS.purple },
-  { shape: "square", color: GAME_COLORS.green },
-  { shape: "triangle", color: GAME_COLORS.yellow },
-  { shape: "triangle", color: GAME_COLORS.orange },
-  { shape: "star", color: GAME_COLORS.pink },
-  { shape: "star", color: GAME_COLORS.blue },
-  { shape: "heart", color: GAME_COLORS.red },
-  { shape: "heart", color: GAME_COLORS.purple },
-  { shape: "diamond", color: GAME_COLORS.green },
-  { shape: "diamond", color: GAME_COLORS.yellow },
-];
+// Card patterns for matching - using emojis
+const cardEmojis = ["🐶", "🐱", "🐰", "🐻", "🦊", "🐸", "🐵", "🦁", "🐯", "🐨", "🐷", "🐮"];
 
 interface Card {
   id: number;
-  pattern: ShapeItem;
+  emoji: string;
   isFlipped: boolean;
   isMatched: boolean;
 }
 
 function generateCards(): Card[] {
-  const selected = shuffleArray(cardPatterns).slice(0, TOTAL_PAIRS);
+  const selected = shuffleArray(cardEmojis).slice(0, TOTAL_PAIRS);
   const pairs = [...selected, ...selected];
-  return shuffleArray(pairs).map((pattern, index) => ({
+  return shuffleArray(pairs).map((emoji, index) => ({
     id: index,
-    pattern,
+    emoji,
     isFlipped: false,
     isMatched: false,
   }));
-}
-
-function patternEquals(a: ShapeItem, b: ShapeItem): boolean {
-  return a.shape === b.shape && a.color === b.color;
 }
 
 export default function MatchingGame() {
@@ -85,7 +66,7 @@ export default function MatchingGame() {
       const firstCard = cards.find(c => c.id === first);
       const secondCard = cards.find(c => c.id === second);
 
-      if (firstCard && secondCard && patternEquals(firstCard.pattern, secondCard.pattern)) {
+      if (firstCard && secondCard && firstCard.emoji === secondCard.emoji) {
         setTimeout(() => {
           playCorrectSound();
           setCards(prev => prev.map(c =>
@@ -137,12 +118,7 @@ export default function MatchingGame() {
       <StartScreen
         title="Matching Game"
         description="Find the matching pairs!"
-        icon={
-          <span className="inline-flex gap-1">
-            <ShapeRenderer shape="square" color={GAME_COLORS.orange} className="w-12 h-12" />
-            <ShapeRenderer shape="square" color={GAME_COLORS.orange} className="w-12 h-12" />
-          </span>
-        }
+        icon={<span className="text-6xl">🃏</span>}
         color="orange"
         gradient={GRADIENT}
         onStart={startGame}
@@ -155,7 +131,7 @@ export default function MatchingGame() {
     return (
       <main className={`min-h-screen p-6 flex flex-col items-center justify-center bg-gradient-to-b ${GRADIENT}`}>
         <BackButton />
-        <div className="text-6xl font-bold mb-6 celebrate text-green">You Did It!</div>
+        <div className="text-6xl mb-6 celebrate">🎉</div>
         <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-orange">
           Great Job!
         </h1>
@@ -164,7 +140,7 @@ export default function MatchingGame() {
         </p>
         <div className="flex gap-2 my-6">
           {Array.from({ length: stars }).map((_, i) => (
-            <div key={i} className="w-8 h-8 bg-yellow rounded-full shadow-md" />
+            <span key={i} className="text-4xl">⭐</span>
           ))}
         </div>
         <button
@@ -206,7 +182,7 @@ export default function MatchingGame() {
             }`}
           >
             {card.isFlipped || card.isMatched ? (
-              <ShapeRenderer shape={card.pattern.shape} color={card.pattern.color} className="w-10 h-10 md:w-12 md:h-12" />
+              <span className="text-3xl md:text-4xl">{card.emoji}</span>
             ) : (
               <span className="text-2xl md:text-3xl font-bold text-white/80">?</span>
             )}

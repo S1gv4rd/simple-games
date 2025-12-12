@@ -1,4 +1,4 @@
-const CACHE_NAME = 'simple-games-v3';
+const CACHE_NAME = 'simple-games-v4';
 const urlsToCache = [
   '/',
   '/counting',

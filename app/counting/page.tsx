@@ -3,15 +3,14 @@
 import { useState, useCallback } from "react";
 import BackButton from "@/components/BackButton";
 import Celebration from "@/components/Celebration";
-import ShapeRenderer, { ShapeType } from "@/components/ShapeRenderer";
 import ScoreDisplay from "@/components/ScoreDisplay";
 import { playCorrectSound, playWrongSound } from "@/lib/sounds";
-import { GAME_COLORS, shuffleArray, randomItem, randomInRange } from "@/lib/gameUtils";
+import { shuffleArray, randomItem, randomInRange } from "@/lib/gameUtils";
 
 const TOTAL_ROUNDS = 10;
 const GRADIENT = "from-purple/10 to-pink/10";
-const COLOR_VALUES = Object.values(GAME_COLORS);
-const SHAPES: ShapeType[] = ["circle", "square", "triangle", "diamond", "star", "heart"];
+
+const ANIMALS = ["🐶", "🐱", "🐰", "🐻", "🦊", "🐸", "🐵", "🐷", "🐮", "🦁", "🐯", "🐨"];
 
 type Difficulty = "easy" | "medium" | "hard";
 
@@ -23,16 +22,14 @@ const difficultyRanges: Record<Difficulty, { min: number; max: number }> = {
 
 interface Question {
   count: number;
-  shape: ShapeType;
-  color: string;
+  emoji: string;
   options: number[];
 }
 
 function generateQuestion(difficulty: Difficulty): Question {
   const { min, max } = difficultyRanges[difficulty];
   const count = randomInRange(min, max);
-  const shape = randomItem(SHAPES);
-  const color = randomItem(COLOR_VALUES);
+  const emoji = randomItem(ANIMALS);
 
   // Generate options with expanded range to avoid infinite loop
   const options = [count];
@@ -48,7 +45,7 @@ function generateQuestion(difficulty: Difficulty): Question {
     attempts++;
   }
 
-  return { count, shape, color, options: shuffleArray(options) };
+  return { count, emoji, options: shuffleArray(options) };
 }
 
 export default function CountingGame() {
@@ -100,7 +97,7 @@ export default function CountingGame() {
     return (
       <main className={`min-h-screen p-6 flex flex-col items-center justify-center bg-gradient-to-b ${GRADIENT}`}>
         <BackButton />
-        <div className="text-7xl font-bold mb-6 text-purple pop-in">123</div>
+        <div className="text-7xl mb-6 pop-in">🔢</div>
         <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-purple pop-in" style={{ animationDelay: "0.1s" }}>
           Counting Game
         </h1>
@@ -140,7 +137,7 @@ export default function CountingGame() {
     return (
       <main className={`min-h-screen p-6 flex flex-col items-center justify-center bg-gradient-to-b ${GRADIENT}`}>
         <BackButton />
-        <div className="text-6xl font-bold mb-6 celebrate text-green">Great!</div>
+        <div className="text-6xl mb-6 celebrate">🎉</div>
         <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-purple">
           Great Job!
         </h1>
@@ -149,7 +146,7 @@ export default function CountingGame() {
         </p>
         <div className="flex gap-2 my-6">
           {Array.from({ length: stars }).map((_, i) => (
-            <div key={i} className="w-8 h-8 bg-yellow rounded-full shadow-md" />
+            <span key={i} className="text-4xl">⭐</span>
           ))}
         </div>
         <button
@@ -170,16 +167,16 @@ export default function CountingGame() {
       <ScoreDisplay round={round} totalRounds={TOTAL_ROUNDS} score={score} />
 
       <h1 className="text-3xl md:text-5xl font-bold text-center mb-8 text-purple">
-        How many shapes?
+        How many animals?
       </h1>
 
       <div
         className={`bg-white rounded-3xl p-8 shadow-lg mb-8 min-h-[150px] flex items-center justify-center flex-wrap gap-4 max-w-md ${shake ? "wiggle" : ""}`}
       >
         {Array.from({ length: question.count }, (_, i) => (
-          <div key={i} className="pop-in" style={{ animationDelay: `${i * 0.1}s` }}>
-            <ShapeRenderer shape={question.shape} color={question.color} className="w-14 h-14 md:w-20 md:h-20" />
-          </div>
+          <span key={i} className="text-5xl md:text-7xl pop-in" style={{ animationDelay: `${i * 0.1}s` }}>
+            {question.emoji}
+          </span>
         ))}
       </div>
 

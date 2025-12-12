@@ -24,9 +24,9 @@ export default function GameComplete({
   return (
     <main className={`min-h-screen p-6 flex flex-col items-center justify-center bg-gradient-to-b ${gradient}`}>
       <BackButton />
-      <div className="text-6xl font-bold mb-6 celebrate text-green">{title}</div>
+      <div className="text-6xl mb-6 celebrate">🎉</div>
       <h1 className={`text-4xl md:text-5xl font-bold text-center mb-4 text-${color}`}>
-        Great Job!
+        {title}
       </h1>
       <p className="text-2xl md:text-3xl text-center mb-2 text-foreground">
         You got <span className={`text-${color} font-bold`}>{score}</span> out of{" "}
@@ -34,7 +34,7 @@ export default function GameComplete({
       </p>
       <div className="flex gap-2 my-6">
         {Array.from({ length: stars }).map((_, i) => (
-          <div key={i} className="w-8 h-8 bg-yellow rounded-full shadow-md" />
+          <span key={i} className="text-4xl">⭐</span>
         ))}
       </div>
       <button

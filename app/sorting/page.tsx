@@ -12,28 +12,26 @@ const TOTAL_ROUNDS = 10;
 const GRADIENT = "from-green/10 to-blue/10";
 
 const sortableItems = [
-  { name: "Elephant", size: 10, color: "#9b5de5" },
-  { name: "Mouse", size: 1, color: "#ff6b9d" },
-  { name: "Dog", size: 5, color: "#ff9e00" },
-  { name: "Cat", size: 4, color: "#fee440" },
-  { name: "Bear", size: 9, color: "#00f5d4" },
-  { name: "Bunny", size: 3, color: "#ef476f" },
-  { name: "Lion", size: 8, color: "#fee440" },
-  { name: "Frog", size: 2, color: "#00f5d4" },
-  { name: "Butterfly", size: 1, color: "#ff6b9d" },
-  { name: "Turtle", size: 3, color: "#00bbf9" },
-  { name: "House", size: 10, color: "#ef476f" },
-  { name: "Castle", size: 10, color: "#9b5de5" },
-  { name: "Ball", size: 4, color: "#00bbf9" },
-  { name: "Tennis ball", size: 2, color: "#fee440" },
-  { name: "Apple", size: 2, color: "#ef476f" },
-  { name: "Grape", size: 1, color: "#9b5de5" },
+  { name: "Elephant", emoji: "🐘", size: 10 },
+  { name: "Mouse", emoji: "🐭", size: 1 },
+  { name: "Dog", emoji: "🐕", size: 5 },
+  { name: "Cat", emoji: "🐈", size: 4 },
+  { name: "Bear", emoji: "🐻", size: 9 },
+  { name: "Bunny", emoji: "🐰", size: 3 },
+  { name: "Lion", emoji: "🦁", size: 8 },
+  { name: "Frog", emoji: "🐸", size: 2 },
+  { name: "Butterfly", emoji: "🦋", size: 1 },
+  { name: "Turtle", emoji: "🐢", size: 3 },
+  { name: "Whale", emoji: "🐋", size: 10 },
+  { name: "Bird", emoji: "🐦", size: 2 },
+  { name: "Fish", emoji: "🐟", size: 2 },
+  { name: "Ant", emoji: "🐜", size: 1 },
 ];
 
 interface SortableItem {
   name: string;
+  emoji: string;
   size: number;
-  color: string;
 }
 
 interface Question {
@@ -73,12 +71,7 @@ export default function SortingGame() {
       <StartScreen
         title="Sorting Game"
         description="Which is bigger or smaller?"
-        icon={
-          <div className="flex items-end gap-2">
-            <div className="w-8 h-8 bg-green rounded-lg" />
-            <div className="w-12 h-16 bg-green rounded-lg" />
-          </div>
-        }
+        icon={<span className="text-5xl">🐘🐭</span>}
         color="green"
         gradient={GRADIENT}
         onStart={game.startGame}
@@ -118,18 +111,7 @@ export default function SortingGame() {
             onClick={() => handleAnswer(index === 0 ? "first" : "second")}
             className="game-button bg-white flex flex-col items-center justify-center p-8 md:p-12 rounded-3xl shadow-lg hover:shadow-xl hover:scale-105 transition-all"
           >
-            <div
-              className="mb-4 rounded-2xl flex items-center justify-center"
-              style={{
-                width: `${60 + item.size * 8}px`,
-                height: `${60 + item.size * 8}px`,
-                backgroundColor: item.color,
-              }}
-            >
-              <span className="text-white font-bold text-2xl md:text-3xl">
-                {item.name.charAt(0)}
-              </span>
-            </div>
+            <span className="text-6xl md:text-8xl mb-4">{item.emoji}</span>
             <span className="text-xl md:text-2xl font-bold text-foreground">{item.name}</span>
           </button>
         ))}
