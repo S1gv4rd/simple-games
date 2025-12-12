@@ -50,6 +50,22 @@ export default function TracingGame() {
     return () => window.removeEventListener("resize", updateSize);
   }, []);
 
+  // Prevent page scroll when game is active
+  useEffect(() => {
+    if (started && !gameComplete) {
+      document.body.style.overflow = "hidden";
+      document.body.style.position = "fixed";
+      document.body.style.width = "100%";
+      document.body.style.height = "100%";
+    }
+    return () => {
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.width = "";
+      document.body.style.height = "";
+    };
+  }, [started, gameComplete]);
+
   // Draw template and user strokes
   useEffect(() => {
     const canvas = canvasRef.current;
