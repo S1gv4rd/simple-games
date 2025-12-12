@@ -1,13 +1,16 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import BackButton from "@/components/BackButton";
-import Celebration from "@/components/Celebration";
-import { playCorrectSound, playWrongSound } from "@/lib/sounds";
+import { useCallback } from "react";
+import StartScreen from "@/components/StartScreen";
+import GameComplete from "@/components/GameComplete";
+import GameLayout from "@/components/GameLayout";
+import ScoreDisplay from "@/components/ScoreDisplay";
+import { useGameState } from "@/hooks/useGameState";
+import { shuffleArray } from "@/lib/gameUtils";
 
 const TOTAL_ROUNDS = 10;
+const GRADIENT = "from-green/10 to-blue/10";
 
-// Items with relative sizes for comparison (1-10 scale)
 const sortableItems = [
   { name: "Elephant", size: 10, color: "#9b5de5" },
   { name: "Mouse", size: 1, color: "#ff6b9d" },
@@ -27,140 +30,89 @@ const sortableItems = [
   { name: "Grape", size: 1, color: "#9b5de5" },
 ];
 
-type SortType = "size" | "speed";
+interface SortableItem {
+  name: string;
+  size: number;
+  color: string;
+}
 
-function generateQuestion(): { items: typeof sortableItems[number][]; correctAnswer: "first" | "second"; sortType: SortType; question: string } {
-  // Pick two items with different sizes
-  let shuffled = [...sortableItems].sort(() => Math.random() - 0.5);
-  let item1 = shuffled[0];
-  let item2 = shuffled.find(item => item.size !== item1.size) || shuffled[1];
+interface Question {
+  items: SortableItem[];
+  correctAnswer: "first" | "second";
+  question: string;
+}
 
-  const sortType: SortType = "size";
+function generateQuestion(): Question {
+  const shuffled = shuffleArray(sortableItems);
+  const item1 = shuffled[0];
+  const item2 = shuffled.find(item => item.size !== item1.size) || shuffled[1];
+
   const askBigger = Math.random() > 0.5;
-
-  // Determine which is actually bigger based on size property
   const firstIsBigger = item1.size > item2.size;
 
   return {
     items: [item1, item2],
     correctAnswer: (askBigger && firstIsBigger) || (!askBigger && !firstIsBigger) ? "first" : "second",
-    sortType,
     question: askBigger ? "Which is BIGGER?" : "Which is SMALLER?",
   };
 }
 
 export default function SortingGame() {
-  const [started, setStarted] = useState(false);
-  const [question, setQuestion] = useState(generateQuestion);
-  const [showCelebration, setShowCelebration] = useState(false);
-  const [shake, setShake] = useState(false);
-  const [score, setScore] = useState(0);
-  const [round, setRound] = useState(1);
-  const [gameComplete, setGameComplete] = useState(false);
+  const game = useGameState<Question>({ totalRounds: TOTAL_ROUNDS, generateQuestion });
 
   const handleAnswer = useCallback((answer: "first" | "second") => {
-    if (answer === question.correctAnswer) {
-      playCorrectSound();
-      setShowCelebration(true);
-      setScore((s) => s + 1);
+    if (answer === game.question.correctAnswer) {
+      game.handleCorrect();
     } else {
-      playWrongSound();
-      setShake(true);
-      setTimeout(() => setShake(false), 500);
+      game.handleWrong();
     }
-  }, [question.correctAnswer]);
+  }, [game]);
 
-  const handleCelebrationComplete = useCallback(() => {
-    setShowCelebration(false);
-    if (round >= TOTAL_ROUNDS) {
-      setGameComplete(true);
-    } else {
-      setRound((r) => r + 1);
-      setQuestion(generateQuestion());
-    }
-  }, [round]);
-
-  const startGame = () => {
-    setStarted(true);
-    setQuestion(generateQuestion());
-    setScore(0);
-    setRound(1);
-    setGameComplete(false);
-  };
-
-  // Start screen
-  if (!started) {
+  if (!game.started) {
     return (
-      <main className="min-h-screen p-6 flex flex-col items-center justify-center bg-gradient-to-b from-green/10 to-blue/10">
-        <BackButton />
-        <div className="flex items-end gap-2 mb-6 pop-in">
-          <div className="w-8 h-8 bg-green rounded-lg" />
-          <div className="w-12 h-16 bg-green rounded-lg" />
-        </div>
-        <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-green pop-in" style={{ animationDelay: "0.1s" }}>
-          Sorting Game
-        </h1>
-        <p className="text-xl md:text-2xl text-center mb-8 text-foreground/70 pop-in" style={{ animationDelay: "0.2s" }}>
-          Which is bigger or smaller?
-        </p>
-        <button
-          onClick={startGame}
-          className="game-button bg-green text-white text-2xl font-bold py-6 px-12 rounded-2xl shadow-lg pop-in"
-          style={{ animationDelay: "0.3s" }}
-        >
-          Start!
-        </button>
-      </main>
+      <StartScreen
+        title="Sorting Game"
+        description="Which is bigger or smaller?"
+        icon={
+          <div className="flex items-end gap-2">
+            <div className="w-8 h-8 bg-green rounded-lg" />
+            <div className="w-12 h-16 bg-green rounded-lg" />
+          </div>
+        }
+        color="green"
+        gradient={GRADIENT}
+        onStart={game.startGame}
+      />
     );
   }
 
-  // Game complete screen
-  if (gameComplete) {
+  if (game.gameComplete) {
     return (
-      <main className="min-h-screen p-6 flex flex-col items-center justify-center bg-gradient-to-b from-green/10 to-blue/10">
-        <BackButton />
-        <div className="text-6xl font-bold mb-6 celebrate text-green">Super!</div>
-        <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-green">
-          Great Job!
-        </h1>
-        <p className="text-2xl md:text-3xl text-center mb-2 text-foreground">
-          You got <span className="text-green font-bold">{score}</span> out of <span className="font-bold">{TOTAL_ROUNDS}</span>!
-        </p>
-        <div className="flex gap-2 my-6">
-          {Array.from({ length: score === TOTAL_ROUNDS ? 3 : score >= 7 ? 2 : 1 }).map((_, i) => (
-            <div key={i} className="w-8 h-8 bg-yellow rounded-full shadow-md" />
-          ))}
-        </div>
-        <button
-          onClick={() => setStarted(false)}
-          className="game-button bg-green text-white text-2xl font-bold py-6 px-12 rounded-2xl shadow-lg mt-4"
-        >
-          Play Again
-        </button>
-      </main>
+      <GameComplete
+        title="Super!"
+        score={game.score}
+        totalRounds={TOTAL_ROUNDS}
+        color="green"
+        gradient={GRADIENT}
+        onPlayAgain={game.resetGame}
+      />
     );
   }
 
   return (
-    <main className="min-h-screen p-6 flex flex-col items-center justify-center bg-gradient-to-b from-green/10 to-blue/10">
-      <BackButton />
-      <Celebration show={showCelebration} onComplete={handleCelebrationComplete} />
+    <GameLayout
+      gradient={GRADIENT}
+      showCelebration={game.showCelebration}
+      onCelebrationComplete={game.handleCelebrationComplete}
+    >
+      <ScoreDisplay round={game.round} totalRounds={TOTAL_ROUNDS} score={game.score} />
 
-      <div className="flex justify-between w-full max-w-2xl mb-4">
-        <span className="bg-white/80 text-foreground px-4 py-2 rounded-full font-bold text-lg">
-          Round {round}/{TOTAL_ROUNDS}
-        </span>
-        <span className="bg-yellow text-foreground px-4 py-2 rounded-full font-bold text-lg">
-          {score} pts
-        </span>
-      </div>
-
-      <h1 className={`text-3xl md:text-5xl font-bold text-center mb-8 text-green ${shake ? "wiggle" : ""}`}>
-        {question.question}
+      <h1 className={`text-3xl md:text-5xl font-bold text-center mb-8 text-green ${game.shake ? "wiggle" : ""}`}>
+        {game.question.question}
       </h1>
 
       <div className="flex gap-6 md:gap-12">
-        {question.items.map((item, index) => (
+        {game.question.items.map((item, index) => (
           <button
             key={index}
             onClick={() => handleAnswer(index === 0 ? "first" : "second")}
@@ -182,6 +134,6 @@ export default function SortingGame() {
           </button>
         ))}
       </div>
-    </main>
+    </GameLayout>
   );
 }

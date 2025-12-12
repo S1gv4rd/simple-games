@@ -1,9 +1,14 @@
-const CACHE_NAME = 'simple-games-v2';
+const CACHE_NAME = 'simple-games-v3';
 const urlsToCache = [
   '/',
   '/counting',
   '/alphabet',
   '/colors',
+  '/matching',
+  '/sorting',
+  '/patterns',
+  '/numbers',
+  '/tracing',
 ];
 
 // Install service worker and cache resources

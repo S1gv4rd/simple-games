@@ -1,22 +1,26 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import BackButton from "@/components/BackButton";
-import Celebration from "@/components/Celebration";
-import { playCorrectSound, playWrongSound } from "@/lib/sounds";
+import { useCallback } from "react";
+import StartScreen from "@/components/StartScreen";
+import GameComplete from "@/components/GameComplete";
+import GameLayout from "@/components/GameLayout";
+import ScoreDisplay from "@/components/ScoreDisplay";
+import { useGameState } from "@/hooks/useGameState";
+import { shuffleArray, GAME_COLORS } from "@/lib/gameUtils";
 
 const TOTAL_ROUNDS = 10;
+const GRADIENT = "from-pink/10 to-yellow/10";
 
 type GameMode = "colors" | "shapes";
 
 const colors = [
-  { name: "Red", hex: "#ef476f" },
-  { name: "Orange", hex: "#ff9e00" },
-  { name: "Yellow", hex: "#fee440" },
-  { name: "Green", hex: "#00f5d4" },
-  { name: "Blue", hex: "#00bbf9" },
-  { name: "Purple", hex: "#9b5de5" },
-  { name: "Pink", hex: "#ff6b9d" },
+  { name: "Red", hex: GAME_COLORS.red },
+  { name: "Orange", hex: GAME_COLORS.orange },
+  { name: "Yellow", hex: GAME_COLORS.yellow },
+  { name: "Green", hex: GAME_COLORS.green },
+  { name: "Blue", hex: GAME_COLORS.blue },
+  { name: "Purple", hex: GAME_COLORS.purple },
+  { name: "Pink", hex: GAME_COLORS.pink },
 ];
 
 const shapes = [
@@ -27,7 +31,24 @@ const shapes = [
   { name: "Heart", svg: "M50,88 C20,60 5,40 15,25 C25,10 45,15 50,30 C55,15 75,10 85,25 C95,40 80,60 50,88 Z" },
 ];
 
-function generateColorQuestion() {
+interface ColorOption {
+  name: string;
+  hex: string;
+}
+
+interface ShapeOption {
+  name: string;
+  svg: string;
+}
+
+interface Question {
+  target: ColorOption | ShapeOption;
+  options: (ColorOption | ShapeOption)[];
+  mode: GameMode;
+  color?: ColorOption;
+}
+
+function generateColorQuestion(): Question {
   const targetColor = colors[Math.floor(Math.random() * colors.length)];
   const options = [targetColor];
 
@@ -38,11 +59,10 @@ function generateColorQuestion() {
     }
   }
 
-  options.sort(() => Math.random() - 0.5);
-  return { target: targetColor, options, mode: "colors" as GameMode };
+  return { target: targetColor, options: shuffleArray(options), mode: "colors" };
 }
 
-function generateShapeQuestion() {
+function generateShapeQuestion(): Question {
   const targetShape = shapes[Math.floor(Math.random() * shapes.length)];
   const options = [targetShape];
 
@@ -53,150 +73,89 @@ function generateShapeQuestion() {
     }
   }
 
-  options.sort(() => Math.random() - 0.5);
   const randomColor = colors[Math.floor(Math.random() * colors.length)];
-  return { target: targetShape, options, mode: "shapes" as GameMode, color: randomColor };
+  return { target: targetShape, options: shuffleArray(options), mode: "shapes", color: randomColor };
 }
 
-function generateQuestion() {
+function generateQuestion(): Question {
   return Math.random() > 0.5 ? generateColorQuestion() : generateShapeQuestion();
 }
 
 export default function ColorsGame() {
-  const [started, setStarted] = useState(false);
-  const [question, setQuestion] = useState(generateQuestion);
-  const [showCelebration, setShowCelebration] = useState(false);
-  const [shake, setShake] = useState(false);
-  const [score, setScore] = useState(0);
-  const [round, setRound] = useState(1);
-  const [gameComplete, setGameComplete] = useState(false);
+  const game = useGameState<Question>({ totalRounds: TOTAL_ROUNDS, generateQuestion });
 
   const handleAnswer = useCallback((answer: string) => {
-    if (answer === question.target.name) {
-      playCorrectSound();
-      setShowCelebration(true);
-      setScore((s) => s + 1);
+    if (answer === game.question.target.name) {
+      game.handleCorrect();
     } else {
-      playWrongSound();
-      setShake(true);
-      setTimeout(() => setShake(false), 500);
+      game.handleWrong();
     }
-  }, [question.target.name]);
+  }, [game]);
 
-  const handleCelebrationComplete = useCallback(() => {
-    setShowCelebration(false);
-    if (round >= TOTAL_ROUNDS) {
-      setGameComplete(true);
-    } else {
-      setRound((r) => r + 1);
-      setQuestion(generateQuestion());
-    }
-  }, [round]);
-
-  const startGame = () => {
-    setStarted(true);
-    setQuestion(generateQuestion());
-    setScore(0);
-    setRound(1);
-    setGameComplete(false);
-  };
-
-  // Start screen
-  if (!started) {
+  if (!game.started) {
     return (
-      <main className="min-h-screen p-6 flex flex-col items-center justify-center bg-gradient-to-b from-pink/10 to-yellow/10">
-        <BackButton />
-        <div className="flex gap-2 mb-6 pop-in">
-          <div className="w-8 h-8 rounded-full bg-[#ef476f]" />
-          <div className="w-8 h-8 rounded-full bg-[#fee440]" />
-          <div className="w-8 h-8 rounded-full bg-[#00bbf9]" />
-        </div>
-        <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-pink pop-in" style={{ animationDelay: "0.1s" }}>
-          Colors & Shapes
-        </h1>
-        <p className="text-xl md:text-2xl text-center mb-8 text-foreground/70 pop-in" style={{ animationDelay: "0.2s" }}>
-          Identify colors and shapes!
-        </p>
-        <button
-          onClick={startGame}
-          className="game-button bg-pink text-white text-2xl font-bold py-6 px-12 rounded-2xl shadow-lg pop-in"
-          style={{ animationDelay: "0.3s" }}
-        >
-          Start!
-        </button>
-      </main>
+      <StartScreen
+        title="Colors & Shapes"
+        description="Identify colors and shapes!"
+        icon={
+          <div className="flex gap-2">
+            <div className="w-8 h-8 rounded-full bg-[#ef476f]" />
+            <div className="w-8 h-8 rounded-full bg-[#fee440]" />
+            <div className="w-8 h-8 rounded-full bg-[#00bbf9]" />
+          </div>
+        }
+        color="pink"
+        gradient={GRADIENT}
+        onStart={game.startGame}
+      />
     );
   }
 
-  // Game complete screen
-  if (gameComplete) {
+  if (game.gameComplete) {
     return (
-      <main className="min-h-screen p-6 flex flex-col items-center justify-center bg-gradient-to-b from-pink/10 to-yellow/10">
-        <BackButton />
-        <div className="text-6xl font-bold mb-6 celebrate text-green">Wonderful!</div>
-        <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-pink">
-          Great Job!
-        </h1>
-        <p className="text-2xl md:text-3xl text-center mb-2 text-foreground">
-          You got <span className="text-pink font-bold">{score}</span> out of <span className="font-bold">{TOTAL_ROUNDS}</span>!
-        </p>
-        <div className="flex gap-2 my-6">
-          {Array.from({ length: score === TOTAL_ROUNDS ? 3 : score >= 7 ? 2 : 1 }).map((_, i) => (
-            <div key={i} className="w-8 h-8 bg-yellow rounded-full shadow-md" />
-          ))}
-        </div>
-        <button
-          onClick={() => setStarted(false)}
-          className="game-button bg-pink text-white text-2xl font-bold py-6 px-12 rounded-2xl shadow-lg mt-4"
-        >
-          Play Again
-        </button>
-      </main>
+      <GameComplete
+        title="Wonderful!"
+        score={game.score}
+        totalRounds={TOTAL_ROUNDS}
+        color="pink"
+        gradient={GRADIENT}
+        onPlayAgain={game.resetGame}
+      />
     );
   }
 
-  const isColorMode = question.mode === "colors";
+  const isColorMode = game.question.mode === "colors";
 
   return (
-    <main className="min-h-screen p-6 flex flex-col items-center justify-center bg-gradient-to-b from-pink/10 to-yellow/10">
-      <BackButton />
-      <Celebration show={showCelebration} onComplete={handleCelebrationComplete} />
-
-      <div className="flex justify-between w-full max-w-2xl mb-4">
-        <span className="bg-white/80 text-foreground px-4 py-2 rounded-full font-bold text-lg">
-          Round {round}/{TOTAL_ROUNDS}
-        </span>
-        <span className="bg-yellow text-foreground px-4 py-2 rounded-full font-bold text-lg">
-          {score} pts
-        </span>
-      </div>
+    <GameLayout
+      gradient={GRADIENT}
+      showCelebration={game.showCelebration}
+      onCelebrationComplete={game.handleCelebrationComplete}
+    >
+      <ScoreDisplay round={game.round} totalRounds={TOTAL_ROUNDS} score={game.score} />
 
       <h1 className="text-3xl md:text-5xl font-bold text-center mb-8 text-pink">
         {isColorMode ? "What color is this?" : "What shape is this?"}
       </h1>
 
-      {/* Display */}
-      <div
-        className={`bg-white rounded-3xl p-8 shadow-lg mb-8 flex items-center justify-center ${shake ? "wiggle" : ""}`}
-      >
+      <div className={`bg-white rounded-3xl p-8 shadow-lg mb-8 flex items-center justify-center ${game.shake ? "wiggle" : ""}`}>
         {isColorMode ? (
           <div
             className="w-32 h-32 md:w-48 md:h-48 rounded-full pop-in shadow-lg"
-            style={{ backgroundColor: (question.target as typeof colors[0]).hex }}
+            style={{ backgroundColor: (game.question.target as ColorOption).hex }}
           />
         ) : (
           <svg viewBox="0 0 100 100" className="w-32 h-32 md:w-48 md:h-48 pop-in">
             <path
-              d={(question.target as typeof shapes[0]).svg}
-              fill={(question as { color: typeof colors[0] }).color.hex}
+              d={(game.question.target as ShapeOption).svg}
+              fill={(game.question.color as ColorOption).hex}
             />
           </svg>
         )}
       </div>
 
-      {/* Options */}
       <div className="grid grid-cols-2 gap-6 w-full max-w-xl">
-        {question.options.map((option) => (
+        {game.question.options.map((option) => (
           <button
             key={option.name}
             onClick={() => handleAnswer(option.name)}
@@ -206,14 +165,14 @@ export default function ColorsGame() {
               <div className="flex items-center gap-4 justify-center">
                 <div
                   className="w-12 h-12 md:w-14 md:h-14 rounded-full"
-                  style={{ backgroundColor: (option as typeof colors[0]).hex }}
+                  style={{ backgroundColor: (option as ColorOption).hex }}
                 />
                 <span>{option.name}</span>
               </div>
             ) : (
               <div className="flex items-center gap-4 justify-center">
                 <svg viewBox="0 0 100 100" className="w-12 h-12 md:w-14 md:h-14">
-                  <path d={(option as typeof shapes[0]).svg} fill="#333" />
+                  <path d={(option as ShapeOption).svg} fill="#333" />
                 </svg>
                 <span>{option.name}</span>
               </div>
@@ -221,6 +180,6 @@ export default function ColorsGame() {
           </button>
         ))}
       </div>
-    </main>
+    </GameLayout>
   );
 }

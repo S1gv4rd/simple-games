@@ -1,11 +1,15 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import BackButton from "@/components/BackButton";
-import Celebration from "@/components/Celebration";
-import { playCorrectSound, playWrongSound } from "@/lib/sounds";
+import { useCallback } from "react";
+import StartScreen from "@/components/StartScreen";
+import GameComplete from "@/components/GameComplete";
+import GameLayout from "@/components/GameLayout";
+import ScoreDisplay from "@/components/ScoreDisplay";
+import { useGameState } from "@/hooks/useGameState";
+import { shuffleArray, GAME_COLORS } from "@/lib/gameUtils";
 
 const TOTAL_ROUNDS = 10;
+const GRADIENT = "from-red/10 to-pink/10";
 
 const numberWords = [
   { num: 1, word: "One", dotCount: 1 },
@@ -22,18 +26,19 @@ const numberWords = [
 
 type QuestionType = "word-to-number" | "number-to-word" | "dots-to-number";
 
-function generateQuestion(): {
+interface Question {
   type: QuestionType;
   display: string | number;
   dotCount?: number;
   correctAnswer: number | string;
   options: (number | string)[];
-} {
+}
+
+function generateQuestion(): Question {
   const types: QuestionType[] = ["word-to-number", "number-to-word", "dots-to-number"];
   const type = types[Math.floor(Math.random() * types.length)];
   const target = numberWords[Math.floor(Math.random() * numberWords.length)];
 
-  // Generate options
   const generateOptions = (correct: number | string, isNumber: boolean) => {
     const options: (number | string)[] = [correct];
     while (options.length < 4) {
@@ -43,7 +48,7 @@ function generateQuestion(): {
         options.push(value);
       }
     }
-    return options.sort(() => Math.random() - 0.5);
+    return shuffleArray(options);
   };
 
   switch (type) {
@@ -73,46 +78,18 @@ function generateQuestion(): {
 }
 
 export default function NumbersGame() {
-  const [started, setStarted] = useState(false);
-  const [question, setQuestion] = useState(generateQuestion);
-  const [showCelebration, setShowCelebration] = useState(false);
-  const [shake, setShake] = useState(false);
-  const [score, setScore] = useState(0);
-  const [round, setRound] = useState(1);
-  const [gameComplete, setGameComplete] = useState(false);
+  const game = useGameState<Question>({ totalRounds: TOTAL_ROUNDS, generateQuestion });
 
   const handleAnswer = useCallback((answer: number | string) => {
-    if (answer === question.correctAnswer) {
-      playCorrectSound();
-      setShowCelebration(true);
-      setScore((s) => s + 1);
+    if (answer === game.question.correctAnswer) {
+      game.handleCorrect();
     } else {
-      playWrongSound();
-      setShake(true);
-      setTimeout(() => setShake(false), 500);
+      game.handleWrong();
     }
-  }, [question.correctAnswer]);
-
-  const handleCelebrationComplete = useCallback(() => {
-    setShowCelebration(false);
-    if (round >= TOTAL_ROUNDS) {
-      setGameComplete(true);
-    } else {
-      setRound((r) => r + 1);
-      setQuestion(generateQuestion());
-    }
-  }, [round]);
-
-  const startGame = () => {
-    setStarted(true);
-    setQuestion(generateQuestion());
-    setScore(0);
-    setRound(1);
-    setGameComplete(false);
-  };
+  }, [game]);
 
   const getQuestionText = () => {
-    switch (question.type) {
+    switch (game.question.type) {
       case "word-to-number":
         return "What number is this?";
       case "number-to-word":
@@ -122,92 +99,60 @@ export default function NumbersGame() {
     }
   };
 
-  // Start screen
-  if (!started) {
+  if (!game.started) {
     return (
-      <main className="min-h-screen p-6 flex flex-col items-center justify-center bg-gradient-to-b from-red/10 to-pink/10">
-        <BackButton />
-        <div className="text-7xl font-bold mb-6 text-red pop-in">1 2 3</div>
-        <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-red pop-in" style={{ animationDelay: "0.1s" }}>
-          Numbers Game
-        </h1>
-        <p className="text-xl md:text-2xl text-center mb-8 text-foreground/70 pop-in" style={{ animationDelay: "0.2s" }}>
-          Learn numbers 1 to 10!
-        </p>
-        <button
-          onClick={startGame}
-          className="game-button bg-red text-white text-2xl font-bold py-6 px-12 rounded-2xl shadow-lg pop-in"
-          style={{ animationDelay: "0.3s" }}
-        >
-          Start!
-        </button>
-      </main>
+      <StartScreen
+        title="Numbers Game"
+        description="Learn numbers 1 to 10!"
+        icon={<div className="text-7xl font-bold text-red">1 2 3</div>}
+        color="red"
+        gradient={GRADIENT}
+        onStart={game.startGame}
+      />
     );
   }
 
-  // Game complete screen
-  if (gameComplete) {
+  if (game.gameComplete) {
     return (
-      <main className="min-h-screen p-6 flex flex-col items-center justify-center bg-gradient-to-b from-red/10 to-pink/10">
-        <BackButton />
-        <div className="text-6xl font-bold mb-6 celebrate text-green">Excellent!</div>
-        <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-red">
-          Great Job!
-        </h1>
-        <p className="text-2xl md:text-3xl text-center mb-2 text-foreground">
-          You got <span className="text-red font-bold">{score}</span> out of <span className="font-bold">{TOTAL_ROUNDS}</span>!
-        </p>
-        <div className="flex gap-2 my-6">
-          {Array.from({ length: score === TOTAL_ROUNDS ? 3 : score >= 7 ? 2 : 1 }).map((_, i) => (
-            <div key={i} className="w-8 h-8 bg-yellow rounded-full shadow-md" />
-          ))}
-        </div>
-        <button
-          onClick={() => setStarted(false)}
-          className="game-button bg-red text-white text-2xl font-bold py-6 px-12 rounded-2xl shadow-lg mt-4"
-        >
-          Play Again
-        </button>
-      </main>
+      <GameComplete
+        title="Excellent!"
+        score={game.score}
+        totalRounds={TOTAL_ROUNDS}
+        color="red"
+        gradient={GRADIENT}
+        onPlayAgain={game.resetGame}
+      />
     );
   }
 
   return (
-    <main className="min-h-screen p-6 flex flex-col items-center justify-center bg-gradient-to-b from-red/10 to-pink/10">
-      <BackButton />
-      <Celebration show={showCelebration} onComplete={handleCelebrationComplete} />
-
-      <div className="flex justify-between w-full max-w-2xl mb-4">
-        <span className="bg-white/80 text-foreground px-4 py-2 rounded-full font-bold text-lg">
-          Round {round}/{TOTAL_ROUNDS}
-        </span>
-        <span className="bg-yellow text-foreground px-4 py-2 rounded-full font-bold text-lg">
-          {score} pts
-        </span>
-      </div>
+    <GameLayout
+      gradient={GRADIENT}
+      showCelebration={game.showCelebration}
+      onCelebrationComplete={game.handleCelebrationComplete}
+    >
+      <ScoreDisplay round={game.round} totalRounds={TOTAL_ROUNDS} score={game.score} />
 
       <h1 className="text-2xl md:text-4xl font-bold text-center mb-6 text-red">
         {getQuestionText()}
       </h1>
 
-      {/* Display */}
-      <div className={`bg-white rounded-3xl p-8 shadow-lg mb-8 min-w-[200px] text-center ${shake ? "wiggle" : ""}`}>
-        {question.type === "dots-to-number" && question.dotCount ? (
+      <div className={`bg-white rounded-3xl p-8 shadow-lg mb-8 min-w-[200px] text-center ${game.shake ? "wiggle" : ""}`}>
+        {game.question.type === "dots-to-number" && game.question.dotCount ? (
           <div className="flex flex-wrap justify-center gap-2 max-w-[200px]">
-            {Array.from({ length: question.dotCount }).map((_, i) => (
+            {Array.from({ length: game.question.dotCount }).map((_, i) => (
               <div key={i} className="w-6 h-6 md:w-8 md:h-8 bg-red rounded-full pop-in" style={{ animationDelay: `${i * 0.05}s` }} />
             ))}
           </div>
         ) : (
           <span className="font-bold text-red text-6xl md:text-8xl">
-            {question.display}
+            {game.question.display}
           </span>
         )}
       </div>
 
-      {/* Options */}
       <div className="grid grid-cols-2 gap-4 md:gap-6 w-full max-w-lg">
-        {question.options.map((option, index) => (
+        {game.question.options.map((option, index) => (
           <button
             key={index}
             onClick={() => handleAnswer(option)}
@@ -217,6 +162,6 @@ export default function NumbersGame() {
           </button>
         ))}
       </div>
-    </main>
+    </GameLayout>
   );
 }

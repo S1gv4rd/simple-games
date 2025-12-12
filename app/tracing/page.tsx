@@ -1,23 +1,27 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import StartScreen from "@/components/StartScreen";
+import GameComplete from "@/components/GameComplete";
 import BackButton from "@/components/BackButton";
 import Celebration from "@/components/Celebration";
 import { playCorrectSound } from "@/lib/sounds";
+import { GAME_COLORS } from "@/lib/gameUtils";
 
 const TOTAL_ROUNDS = 10;
+const GRADIENT = "from-purple/10 to-pink/10";
 
 const tracingItems = [
-  { char: "A", color: "#ef476f" },
-  { char: "B", color: "#ff9e00" },
-  { char: "C", color: "#fee440" },
-  { char: "D", color: "#00f5d4" },
-  { char: "E", color: "#00bbf9" },
-  { char: "1", color: "#9b5de5" },
-  { char: "2", color: "#ff6b9d" },
-  { char: "3", color: "#00bbf9" },
-  { char: "4", color: "#00f5d4" },
-  { char: "5", color: "#fee440" },
+  { char: "A", color: GAME_COLORS.red },
+  { char: "B", color: GAME_COLORS.orange },
+  { char: "C", color: GAME_COLORS.yellow },
+  { char: "D", color: GAME_COLORS.green },
+  { char: "E", color: GAME_COLORS.blue },
+  { char: "1", color: GAME_COLORS.purple },
+  { char: "2", color: GAME_COLORS.pink },
+  { char: "3", color: GAME_COLORS.blue },
+  { char: "4", color: GAME_COLORS.green },
+  { char: "5", color: GAME_COLORS.yellow },
 ];
 
 function generateQuestion() {
@@ -37,7 +41,6 @@ export default function TracingGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [canvasSize, setCanvasSize] = useState({ width: 280, height: 280 });
 
-  // Set canvas size based on screen
   useEffect(() => {
     const updateSize = () => {
       const size = Math.min(window.innerWidth - 64, 320);
@@ -48,7 +51,6 @@ export default function TracingGame() {
     return () => window.removeEventListener("resize", updateSize);
   }, []);
 
-  // Prevent page scroll when game is active
   useEffect(() => {
     if (started && !gameComplete) {
       document.body.style.overflow = "hidden";
@@ -64,18 +66,15 @@ export default function TracingGame() {
     };
   }, [started, gameComplete]);
 
-  // Draw everything
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Clear with rounded rect feel
     ctx.fillStyle = "#fafafa";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw faint grid lines for guidance
     ctx.strokeStyle = "#f0f0f0";
     ctx.lineWidth = 1;
     const mid = canvas.width / 2;
@@ -86,24 +85,20 @@ export default function TracingGame() {
     ctx.lineTo(canvas.width, canvas.height / 2);
     ctx.stroke();
 
-    // Draw the template character
     const fontSize = canvasSize.height * 0.65;
     ctx.font = `bold ${fontSize}px system-ui, -apple-system, sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
-    // Soft fill
     ctx.fillStyle = "#e8e8e8";
     ctx.fillText(question.char, canvasSize.width / 2, canvasSize.height / 2 + 5);
 
-    // Dotted outline for tracing guide
     ctx.strokeStyle = "#d0d0d0";
     ctx.lineWidth = 2;
     ctx.setLineDash([6, 6]);
     ctx.strokeText(question.char, canvasSize.width / 2, canvasSize.height / 2 + 5);
     ctx.setLineDash([]);
 
-    // Draw all completed strokes with gradient effect
     allStrokes.forEach((stroke) => {
       if (stroke.length < 2) return;
 
@@ -123,7 +118,6 @@ export default function TracingGame() {
       ctx.shadowBlur = 0;
     });
 
-    // Draw current stroke
     if (points.length >= 2) {
       ctx.strokeStyle = question.color;
       ctx.lineWidth = 12;
@@ -141,7 +135,6 @@ export default function TracingGame() {
       ctx.shadowBlur = 0;
     }
 
-    // Draw cursor dot when drawing
     if (isDrawing && points.length > 0) {
       const lastPoint = points[points.length - 1];
       ctx.fillStyle = "#ffffff";
@@ -231,53 +224,34 @@ export default function TracingGame() {
     setAllStrokes([]);
   };
 
-  // Start screen
+  const resetGame = () => {
+    setStarted(false);
+    setGameComplete(false);
+  };
+
   if (!started) {
     return (
-      <main className="min-h-screen p-6 flex flex-col items-center justify-center bg-gradient-to-b from-purple/10 to-pink/10">
-        <BackButton />
-        <div className="text-7xl font-bold mb-6 pop-in text-purple">Aa</div>
-        <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-purple pop-in" style={{ animationDelay: "0.1s" }}>
-          Tracing
-        </h1>
-        <p className="text-xl md:text-2xl text-center mb-8 text-foreground/70 pop-in" style={{ animationDelay: "0.2s" }}>
-          Draw letters and numbers!
-        </p>
-        <button
-          onClick={startGame}
-          className="game-button bg-purple text-white text-2xl font-bold py-6 px-12 rounded-2xl shadow-lg pop-in"
-          style={{ animationDelay: "0.3s" }}
-        >
-          Start!
-        </button>
-      </main>
+      <StartScreen
+        title="Tracing"
+        description="Draw letters and numbers!"
+        icon={<div className="text-7xl font-bold text-purple">Aa</div>}
+        color="purple"
+        gradient={GRADIENT}
+        onStart={startGame}
+      />
     );
   }
 
-  // Game complete screen
   if (gameComplete) {
     return (
-      <main className="min-h-screen p-6 flex flex-col items-center justify-center bg-gradient-to-b from-purple/10 to-pink/10">
-        <BackButton />
-        <div className="text-6xl font-bold mb-6 celebrate text-green">Great!</div>
-        <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-purple">
-          Great Job!
-        </h1>
-        <p className="text-2xl md:text-3xl text-center mb-2 text-foreground">
-          You traced <span className="text-purple font-bold">{score}</span> of {TOTAL_ROUNDS}!
-        </p>
-        <div className="flex gap-2 my-6">
-          {Array.from({ length: score === TOTAL_ROUNDS ? 3 : score >= 7 ? 2 : 1 }).map((_, i) => (
-            <div key={i} className="w-8 h-8 bg-yellow rounded-full shadow-md" />
-          ))}
-        </div>
-        <button
-          onClick={() => setStarted(false)}
-          className="game-button bg-purple text-white text-2xl font-bold py-6 px-12 rounded-2xl shadow-lg"
-        >
-          Play Again
-        </button>
-      </main>
+      <GameComplete
+        title="Great!"
+        score={score}
+        totalRounds={TOTAL_ROUNDS}
+        color="purple"
+        gradient={GRADIENT}
+        onPlayAgain={resetGame}
+      />
     );
   }
 
@@ -286,7 +260,6 @@ export default function TracingGame() {
       <BackButton />
       <Celebration show={showCelebration} onComplete={handleCelebrationComplete} />
 
-      {/* Progress bar */}
       <div className="w-full max-w-sm mb-4">
         <div className="flex justify-between text-sm font-medium text-foreground/60 mb-1">
           <span>Round {round}/{TOTAL_ROUNDS}</span>
@@ -300,7 +273,6 @@ export default function TracingGame() {
         </div>
       </div>
 
-      {/* Character preview */}
       <div
         className="text-6xl font-bold mb-3 pop-in"
         style={{ color: question.color }}
@@ -308,7 +280,6 @@ export default function TracingGame() {
         {question.char}
       </div>
 
-      {/* Canvas */}
       <div
         className="rounded-3xl shadow-xl overflow-hidden mb-4"
         style={{
@@ -333,7 +304,6 @@ export default function TracingGame() {
         />
       </div>
 
-      {/* Buttons */}
       <div className="flex gap-3">
         <button
           onClick={handleClear}
