@@ -167,13 +167,13 @@ export default function MatchingGame() {
         </span>
       </div>
 
-      <div className="grid grid-cols-4 gap-2 md:gap-3 w-full max-w-md">
+      <div className="grid grid-cols-4 gap-2 md:gap-4 lg:gap-5 w-full max-w-md lg:max-w-xl">
         {cards.map((card) => (
           <button
             key={card.id}
             onClick={() => handleCardClick(card.id)}
             disabled={card.isMatched || card.isFlipped}
-            className={`aspect-square rounded-xl flex items-center justify-center transition-all duration-300 ${
+            className={`aspect-square rounded-xl lg:rounded-2xl flex items-center justify-center transition-all duration-300 ${
               card.isMatched
                 ? "bg-green/30 scale-95"
                 : card.isFlipped
@@ -182,9 +182,9 @@ export default function MatchingGame() {
             }`}
           >
             {card.isFlipped || card.isMatched ? (
-              <span className="text-3xl md:text-4xl">{card.emoji}</span>
+              <span className="text-3xl md:text-4xl lg:text-5xl">{card.emoji}</span>
             ) : (
-              <span className="text-2xl md:text-3xl font-bold text-white/80">?</span>
+              <span className="text-2xl md:text-3xl lg:text-4xl font-bold text-white/80">?</span>
             )}
           </button>
         ))}
