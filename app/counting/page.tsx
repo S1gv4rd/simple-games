@@ -32,13 +32,18 @@ function generateQuestion(difficulty: Difficulty) {
   const count = Math.floor(Math.random() * (max - min + 1)) + min;
   const shapeItem = getRandomShape();
 
-  // Generate wrong answers
+  // Generate wrong answers - expand range if needed to get 4 unique options
   const options = [count];
-  while (options.length < 4) {
-    const wrong = Math.floor(Math.random() * (max - min + 1)) + min;
+  const expandedMin = Math.max(1, min - 2);
+  const expandedMax = max + 2;
+
+  let attempts = 0;
+  while (options.length < 4 && attempts < 100) {
+    const wrong = Math.floor(Math.random() * (expandedMax - expandedMin + 1)) + expandedMin;
     if (!options.includes(wrong)) {
       options.push(wrong);
     }
+    attempts++;
   }
 
   // Shuffle options
