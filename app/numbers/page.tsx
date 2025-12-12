@@ -8,23 +8,24 @@ import { playCorrectSound, playWrongSound } from "@/lib/sounds";
 const TOTAL_ROUNDS = 10;
 
 const numberWords = [
-  { num: 1, word: "One", dots: "●" },
-  { num: 2, word: "Two", dots: "● ●" },
-  { num: 3, word: "Three", dots: "● ● ●" },
-  { num: 4, word: "Four", dots: "● ● ● ●" },
-  { num: 5, word: "Five", dots: "● ● ● ● ●" },
-  { num: 6, word: "Six", dots: "● ● ● ● ● ●" },
-  { num: 7, word: "Seven", dots: "● ● ● ● ● ● ●" },
-  { num: 8, word: "Eight", dots: "● ● ● ● ● ● ● ●" },
-  { num: 9, word: "Nine", dots: "● ● ● ● ● ● ● ● ●" },
-  { num: 10, word: "Ten", dots: "● ● ● ● ● ● ● ● ● ●" },
+  { num: 1, word: "One", dotCount: 1 },
+  { num: 2, word: "Two", dotCount: 2 },
+  { num: 3, word: "Three", dotCount: 3 },
+  { num: 4, word: "Four", dotCount: 4 },
+  { num: 5, word: "Five", dotCount: 5 },
+  { num: 6, word: "Six", dotCount: 6 },
+  { num: 7, word: "Seven", dotCount: 7 },
+  { num: 8, word: "Eight", dotCount: 8 },
+  { num: 9, word: "Nine", dotCount: 9 },
+  { num: 10, word: "Ten", dotCount: 10 },
 ];
 
 type QuestionType = "word-to-number" | "number-to-word" | "dots-to-number";
 
 function generateQuestion(): {
   type: QuestionType;
-  display: string;
+  display: string | number;
+  dotCount?: number;
   correctAnswer: number | string;
   options: (number | string)[];
 } {
@@ -63,7 +64,8 @@ function generateQuestion(): {
     case "dots-to-number":
       return {
         type,
-        display: target.dots,
+        display: "dots",
+        dotCount: target.dotCount,
         correctAnswer: target.num,
         options: generateOptions(target.num, true),
       };
@@ -125,18 +127,19 @@ export default function NumbersGame() {
     return (
       <main className="min-h-screen p-6 flex flex-col items-center justify-center bg-gradient-to-b from-red/10 to-pink/10">
         <BackButton />
-        <span className="text-8xl mb-6">🔢</span>
-        <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-red">
+        <div className="text-7xl font-bold mb-6 text-red pop-in">1 2 3</div>
+        <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-red pop-in" style={{ animationDelay: "0.1s" }}>
           Numbers Game
         </h1>
-        <p className="text-xl md:text-2xl text-center mb-8 text-foreground/70">
+        <p className="text-xl md:text-2xl text-center mb-8 text-foreground/70 pop-in" style={{ animationDelay: "0.2s" }}>
           Learn numbers 1 to 10!
         </p>
         <button
           onClick={startGame}
-          className="game-button bg-red text-white text-2xl font-bold py-6 px-12 rounded-2xl shadow-lg"
+          className="game-button bg-red text-white text-2xl font-bold py-6 px-12 rounded-2xl shadow-lg pop-in"
+          style={{ animationDelay: "0.3s" }}
         >
-          Start Playing!
+          Start!
         </button>
       </main>
     );
@@ -147,15 +150,17 @@ export default function NumbersGame() {
     return (
       <main className="min-h-screen p-6 flex flex-col items-center justify-center bg-gradient-to-b from-red/10 to-pink/10">
         <BackButton />
-        <span className="text-8xl mb-6 celebrate">🎉</span>
+        <div className="text-6xl font-bold mb-6 celebrate text-green">Excellent!</div>
         <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-red">
-          Excellent!
+          Great Job!
         </h1>
         <p className="text-2xl md:text-3xl text-center mb-2 text-foreground">
           You got <span className="text-red font-bold">{score}</span> out of <span className="font-bold">{TOTAL_ROUNDS}</span>!
         </p>
-        <div className="text-5xl my-6">
-          {score === TOTAL_ROUNDS ? "🌟🌟🌟" : score >= 7 ? "🌟🌟" : score >= 4 ? "🌟" : "💪"}
+        <div className="flex gap-2 my-6">
+          {Array.from({ length: score === TOTAL_ROUNDS ? 3 : score >= 7 ? 2 : 1 }).map((_, i) => (
+            <div key={i} className="w-8 h-8 bg-yellow rounded-full shadow-md" />
+          ))}
         </div>
         <button
           onClick={() => setStarted(false)}
@@ -177,7 +182,7 @@ export default function NumbersGame() {
           Round {round}/{TOTAL_ROUNDS}
         </span>
         <span className="bg-yellow text-foreground px-4 py-2 rounded-full font-bold text-lg">
-          ⭐ {score}
+          {score} pts
         </span>
       </div>
 
@@ -187,9 +192,17 @@ export default function NumbersGame() {
 
       {/* Display */}
       <div className={`bg-white rounded-3xl p-8 shadow-lg mb-8 min-w-[200px] text-center ${shake ? "wiggle" : ""}`}>
-        <span className={`font-bold text-red ${question.type === "dots-to-number" ? "text-3xl md:text-4xl" : "text-6xl md:text-8xl"}`}>
-          {question.display}
-        </span>
+        {question.type === "dots-to-number" && question.dotCount ? (
+          <div className="flex flex-wrap justify-center gap-2 max-w-[200px]">
+            {Array.from({ length: question.dotCount }).map((_, i) => (
+              <div key={i} className="w-6 h-6 md:w-8 md:h-8 bg-red rounded-full pop-in" style={{ animationDelay: `${i * 0.05}s` }} />
+            ))}
+          </div>
+        ) : (
+          <span className="font-bold text-red text-6xl md:text-8xl">
+            {question.display}
+          </span>
+        )}
       </div>
 
       {/* Options */}

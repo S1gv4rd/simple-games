@@ -7,33 +7,33 @@ import { playCorrectSound, playWrongSound } from "@/lib/sounds";
 
 const TOTAL_ROUNDS = 10;
 
-const letterData: Record<string, { word: string; emoji: string }> = {
-  A: { word: "Apple", emoji: "🍎" },
-  B: { word: "Ball", emoji: "⚽" },
-  C: { word: "Cat", emoji: "🐱" },
-  D: { word: "Dog", emoji: "🐶" },
-  E: { word: "Elephant", emoji: "🐘" },
-  F: { word: "Fish", emoji: "🐟" },
-  G: { word: "Grapes", emoji: "🍇" },
-  H: { word: "Hat", emoji: "🎩" },
-  I: { word: "Ice cream", emoji: "🍦" },
-  J: { word: "Juice", emoji: "🧃" },
-  K: { word: "Kite", emoji: "🪁" },
-  L: { word: "Lion", emoji: "🦁" },
-  M: { word: "Moon", emoji: "🌙" },
-  N: { word: "Nest", emoji: "🪺" },
-  O: { word: "Orange", emoji: "🍊" },
-  P: { word: "Pig", emoji: "🐷" },
-  Q: { word: "Queen", emoji: "👸" },
-  R: { word: "Rainbow", emoji: "🌈" },
-  S: { word: "Sun", emoji: "☀️" },
-  T: { word: "Tree", emoji: "🌳" },
-  U: { word: "Umbrella", emoji: "☂️" },
-  V: { word: "Violin", emoji: "🎻" },
-  W: { word: "Whale", emoji: "🐋" },
-  X: { word: "Xylophone", emoji: "🎵" },
-  Y: { word: "Yo-yo", emoji: "🪀" },
-  Z: { word: "Zebra", emoji: "🦓" },
+const letterData: Record<string, { word: string; color: string }> = {
+  A: { word: "Apple", color: "#ef476f" },
+  B: { word: "Ball", color: "#00bbf9" },
+  C: { word: "Cat", color: "#ff9e00" },
+  D: { word: "Dog", color: "#9b5de5" },
+  E: { word: "Elephant", color: "#00f5d4" },
+  F: { word: "Fish", color: "#00bbf9" },
+  G: { word: "Grapes", color: "#9b5de5" },
+  H: { word: "Hat", color: "#ef476f" },
+  I: { word: "Ice cream", color: "#ff6b9d" },
+  J: { word: "Juice", color: "#ff9e00" },
+  K: { word: "Kite", color: "#00f5d4" },
+  L: { word: "Lion", color: "#fee440" },
+  M: { word: "Moon", color: "#9b5de5" },
+  N: { word: "Nest", color: "#ff9e00" },
+  O: { word: "Orange", color: "#ff9e00" },
+  P: { word: "Pig", color: "#ff6b9d" },
+  Q: { word: "Queen", color: "#9b5de5" },
+  R: { word: "Rainbow", color: "#ef476f" },
+  S: { word: "Sun", color: "#fee440" },
+  T: { word: "Tree", color: "#00f5d4" },
+  U: { word: "Umbrella", color: "#00bbf9" },
+  V: { word: "Violin", color: "#ff9e00" },
+  W: { word: "Whale", color: "#00bbf9" },
+  X: { word: "Xylophone", color: "#ef476f" },
+  Y: { word: "Yo-yo", color: "#fee440" },
+  Z: { word: "Zebra", color: "#00f5d4" },
 };
 
 const letters = Object.keys(letterData);
@@ -65,7 +65,7 @@ export default function AlphabetGame() {
   const [round, setRound] = useState(1);
   const [gameComplete, setGameComplete] = useState(false);
 
-  const { word, emoji } = letterData[question.targetLetter];
+  const { word, color } = letterData[question.targetLetter];
 
   const handleAnswer = useCallback((answer: string) => {
     if (answer === question.targetLetter) {
@@ -102,18 +102,19 @@ export default function AlphabetGame() {
     return (
       <main className="min-h-screen p-6 flex flex-col items-center justify-center bg-gradient-to-b from-blue/10 to-green/10">
         <BackButton />
-        <span className="text-8xl mb-6">🔤</span>
-        <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-blue">
+        <div className="text-7xl font-bold mb-6 text-blue pop-in">ABC</div>
+        <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-blue pop-in" style={{ animationDelay: "0.1s" }}>
           Alphabet Game
         </h1>
-        <p className="text-xl md:text-2xl text-center mb-8 text-foreground/70">
+        <p className="text-xl md:text-2xl text-center mb-8 text-foreground/70 pop-in" style={{ animationDelay: "0.2s" }}>
           Match letters to words!
         </p>
         <button
           onClick={startGame}
-          className="game-button bg-blue text-white text-2xl font-bold py-6 px-12 rounded-2xl shadow-lg"
+          className="game-button bg-blue text-white text-2xl font-bold py-6 px-12 rounded-2xl shadow-lg pop-in"
+          style={{ animationDelay: "0.3s" }}
         >
-          Start Playing!
+          Start!
         </button>
       </main>
     );
@@ -124,15 +125,17 @@ export default function AlphabetGame() {
     return (
       <main className="min-h-screen p-6 flex flex-col items-center justify-center bg-gradient-to-b from-blue/10 to-green/10">
         <BackButton />
-        <span className="text-8xl mb-6 celebrate">🎉</span>
+        <div className="text-6xl font-bold mb-6 celebrate text-green">Amazing!</div>
         <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-blue">
-          Amazing!
+          Great Job!
         </h1>
         <p className="text-2xl md:text-3xl text-center mb-2 text-foreground">
           You got <span className="text-blue font-bold">{score}</span> out of <span className="font-bold">{TOTAL_ROUNDS}</span>!
         </p>
-        <div className="text-5xl my-6">
-          {score === TOTAL_ROUNDS ? "🌟🌟🌟" : score >= 7 ? "🌟🌟" : score >= 4 ? "🌟" : "💪"}
+        <div className="flex gap-2 my-6">
+          {Array.from({ length: score === TOTAL_ROUNDS ? 3 : score >= 7 ? 2 : 1 }).map((_, i) => (
+            <div key={i} className="w-8 h-8 bg-yellow rounded-full shadow-md" />
+          ))}
         </div>
         <button
           onClick={() => setStarted(false)}
@@ -154,7 +157,7 @@ export default function AlphabetGame() {
           Round {round}/{TOTAL_ROUNDS}
         </span>
         <span className="bg-yellow text-foreground px-4 py-2 rounded-full font-bold text-lg">
-          ⭐ {score}
+          {score} pts
         </span>
       </div>
 
@@ -166,7 +169,12 @@ export default function AlphabetGame() {
       <div
         className={`bg-white rounded-3xl p-8 shadow-lg mb-8 flex flex-col items-center ${shake ? "wiggle" : ""}`}
       >
-        <span className="text-8xl md:text-9xl mb-4 pop-in">{emoji}</span>
+        <div
+          className="text-8xl md:text-9xl mb-4 pop-in font-bold"
+          style={{ color }}
+        >
+          {question.targetLetter}
+        </div>
         <span className="text-3xl md:text-4xl font-bold text-foreground">
           <span className="text-purple text-4xl md:text-5xl">{question.targetLetter}</span>
           {word.slice(1).toLowerCase()}

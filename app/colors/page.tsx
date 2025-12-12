@@ -10,21 +10,21 @@ const TOTAL_ROUNDS = 10;
 type GameMode = "colors" | "shapes";
 
 const colors = [
-  { name: "Red", hex: "#ef476f", emoji: "❤️" },
-  { name: "Orange", hex: "#ff9e00", emoji: "🧡" },
-  { name: "Yellow", hex: "#fee440", emoji: "💛" },
-  { name: "Green", hex: "#00f5d4", emoji: "💚" },
-  { name: "Blue", hex: "#00bbf9", emoji: "💙" },
-  { name: "Purple", hex: "#9b5de5", emoji: "💜" },
-  { name: "Pink", hex: "#ff6b9d", emoji: "🩷" },
+  { name: "Red", hex: "#ef476f" },
+  { name: "Orange", hex: "#ff9e00" },
+  { name: "Yellow", hex: "#fee440" },
+  { name: "Green", hex: "#00f5d4" },
+  { name: "Blue", hex: "#00bbf9" },
+  { name: "Purple", hex: "#9b5de5" },
+  { name: "Pink", hex: "#ff6b9d" },
 ];
 
 const shapes = [
-  { name: "Circle", emoji: "⚫", svg: "M50,50 m-40,0 a40,40 0 1,0 80,0 a40,40 0 1,0 -80,0" },
-  { name: "Square", emoji: "⬛", svg: "M15,15 h70 v70 h-70 z" },
-  { name: "Triangle", emoji: "🔺", svg: "M50,10 L90,90 L10,90 Z" },
-  { name: "Star", emoji: "⭐", svg: "M50,5 L61,40 L98,40 L68,62 L79,97 L50,75 L21,97 L32,62 L2,40 L39,40 Z" },
-  { name: "Heart", emoji: "❤️", svg: "M50,88 C20,60 5,40 15,25 C25,10 45,15 50,30 C55,15 75,10 85,25 C95,40 80,60 50,88 Z" },
+  { name: "Circle", svg: "M50,50 m-40,0 a40,40 0 1,0 80,0 a40,40 0 1,0 -80,0" },
+  { name: "Square", svg: "M15,15 h70 v70 h-70 z" },
+  { name: "Triangle", svg: "M50,10 L90,90 L10,90 Z" },
+  { name: "Star", svg: "M50,5 L61,40 L98,40 L68,62 L79,97 L50,75 L21,97 L32,62 L2,40 L39,40 Z" },
+  { name: "Heart", svg: "M50,88 C20,60 5,40 15,25 C25,10 45,15 50,30 C55,15 75,10 85,25 C95,40 80,60 50,88 Z" },
 ];
 
 function generateColorQuestion() {
@@ -106,18 +106,23 @@ export default function ColorsGame() {
     return (
       <main className="min-h-screen p-6 flex flex-col items-center justify-center bg-gradient-to-b from-pink/10 to-yellow/10">
         <BackButton />
-        <span className="text-8xl mb-6">🎨</span>
-        <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-pink">
+        <div className="flex gap-2 mb-6 pop-in">
+          <div className="w-8 h-8 rounded-full bg-[#ef476f]" />
+          <div className="w-8 h-8 rounded-full bg-[#fee440]" />
+          <div className="w-8 h-8 rounded-full bg-[#00bbf9]" />
+        </div>
+        <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-pink pop-in" style={{ animationDelay: "0.1s" }}>
           Colors & Shapes
         </h1>
-        <p className="text-xl md:text-2xl text-center mb-8 text-foreground/70">
+        <p className="text-xl md:text-2xl text-center mb-8 text-foreground/70 pop-in" style={{ animationDelay: "0.2s" }}>
           Identify colors and shapes!
         </p>
         <button
           onClick={startGame}
-          className="game-button bg-pink text-white text-2xl font-bold py-6 px-12 rounded-2xl shadow-lg"
+          className="game-button bg-pink text-white text-2xl font-bold py-6 px-12 rounded-2xl shadow-lg pop-in"
+          style={{ animationDelay: "0.3s" }}
         >
-          Start Playing!
+          Start!
         </button>
       </main>
     );
@@ -128,15 +133,17 @@ export default function ColorsGame() {
     return (
       <main className="min-h-screen p-6 flex flex-col items-center justify-center bg-gradient-to-b from-pink/10 to-yellow/10">
         <BackButton />
-        <span className="text-8xl mb-6 celebrate">🎉</span>
+        <div className="text-6xl font-bold mb-6 celebrate text-green">Wonderful!</div>
         <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-pink">
-          Wonderful!
+          Great Job!
         </h1>
         <p className="text-2xl md:text-3xl text-center mb-2 text-foreground">
           You got <span className="text-pink font-bold">{score}</span> out of <span className="font-bold">{TOTAL_ROUNDS}</span>!
         </p>
-        <div className="text-5xl my-6">
-          {score === TOTAL_ROUNDS ? "🌟🌟🌟" : score >= 7 ? "🌟🌟" : score >= 4 ? "🌟" : "💪"}
+        <div className="flex gap-2 my-6">
+          {Array.from({ length: score === TOTAL_ROUNDS ? 3 : score >= 7 ? 2 : 1 }).map((_, i) => (
+            <div key={i} className="w-8 h-8 bg-yellow rounded-full shadow-md" />
+          ))}
         </div>
         <button
           onClick={() => setStarted(false)}
@@ -160,7 +167,7 @@ export default function ColorsGame() {
           Round {round}/{TOTAL_ROUNDS}
         </span>
         <span className="bg-yellow text-foreground px-4 py-2 rounded-full font-bold text-lg">
-          ⭐ {score}
+          {score} pts
         </span>
       </div>
 
@@ -205,7 +212,9 @@ export default function ColorsGame() {
               </div>
             ) : (
               <div className="flex items-center gap-4 justify-center">
-                <span className="text-4xl md:text-5xl">{(option as typeof shapes[0]).emoji}</span>
+                <svg viewBox="0 0 100 100" className="w-12 h-12 md:w-14 md:h-14">
+                  <path d={(option as typeof shapes[0]).svg} fill="#333" />
+                </svg>
                 <span>{option.name}</span>
               </div>
             )}
