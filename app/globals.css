@@ -34,8 +34,8 @@ body {
   overscroll-behavior: none;
 }
 
-/* Prevent double-tap zoom on iOS */
-* {
+/* Prevent double-tap zoom on buttons */
+button, a, .game-button {
   touch-action: manipulation;
 }
 
