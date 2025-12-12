@@ -236,7 +236,7 @@ export default function TracingGame() {
     return (
       <main className="min-h-screen p-6 flex flex-col items-center justify-center bg-gradient-to-b from-purple/10 to-pink/10">
         <BackButton />
-        <div className="text-8xl mb-6 pop-in">✏️</div>
+        <div className="text-7xl font-bold mb-6 pop-in text-purple">Aa</div>
         <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-purple pop-in" style={{ animationDelay: "0.1s" }}>
           Tracing
         </h1>
@@ -259,15 +259,17 @@ export default function TracingGame() {
     return (
       <main className="min-h-screen p-6 flex flex-col items-center justify-center bg-gradient-to-b from-purple/10 to-pink/10">
         <BackButton />
-        <div className="text-8xl mb-6 celebrate">🎉</div>
+        <div className="text-6xl font-bold mb-6 celebrate text-green">Great!</div>
         <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-purple">
           Great Job!
         </h1>
         <p className="text-2xl md:text-3xl text-center mb-2 text-foreground">
           You traced <span className="text-purple font-bold">{score}</span> of {TOTAL_ROUNDS}!
         </p>
-        <div className="text-5xl my-6">
-          {score === TOTAL_ROUNDS ? "🌟🌟🌟" : score >= 7 ? "🌟🌟" : score >= 4 ? "🌟" : "💪"}
+        <div className="flex gap-2 my-6">
+          {Array.from({ length: score === TOTAL_ROUNDS ? 3 : score >= 7 ? 2 : 1 }).map((_, i) => (
+            <div key={i} className="w-8 h-8 bg-yellow rounded-full shadow-md" />
+          ))}
         </div>
         <button
           onClick={() => setStarted(false)}
@@ -288,7 +290,7 @@ export default function TracingGame() {
       <div className="w-full max-w-sm mb-4">
         <div className="flex justify-between text-sm font-medium text-foreground/60 mb-1">
           <span>Round {round}/{TOTAL_ROUNDS}</span>
-          <span>⭐ {score}</span>
+          <span>{score} pts</span>
         </div>
         <div className="h-2 bg-white/50 rounded-full overflow-hidden">
           <div
@@ -335,17 +337,17 @@ export default function TracingGame() {
       <div className="flex gap-3">
         <button
           onClick={handleClear}
-          className="flex items-center gap-2 bg-white text-foreground/70 text-lg font-semibold py-3 px-6 rounded-xl shadow-md hover:shadow-lg active:scale-95 transition-all"
+          className="bg-white text-foreground/70 text-lg font-semibold py-3 px-6 rounded-xl shadow-md hover:shadow-lg active:scale-95 transition-all"
         >
-          <span>🗑️</span> Clear
+          Clear
         </button>
         <button
           onClick={handleDone}
           disabled={allStrokes.length === 0}
-          className="flex items-center gap-2 text-white text-lg font-semibold py-3 px-8 rounded-xl shadow-md hover:shadow-lg active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          className="text-white text-lg font-semibold py-3 px-8 rounded-xl shadow-md hover:shadow-lg active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           style={{ backgroundColor: allStrokes.length > 0 ? "#00f5d4" : "#ccc" }}
         >
-          <span>✓</span> Done
+          Done
         </button>
       </div>
     </main>
