@@ -29,7 +29,7 @@ const sortableItems = [
 
 type SortType = "size" | "speed";
 
-function generateQuestion(): { items: typeof sortableItems; correctAnswer: "first" | "second"; sortType: SortType; question: string } {
+function generateQuestion(): { items: typeof sortableItems[number][]; correctAnswer: "first" | "second"; sortType: SortType; question: string } {
   // Pick two items with different sizes
   let shuffled = [...sortableItems].sort(() => Math.random() - 0.5);
   let item1 = shuffled[0];

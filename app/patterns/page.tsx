@@ -45,11 +45,16 @@ function generateQuestion(): {
 
   // Generate options including the correct answer
   const options: ShapeItem[] = [selected.next];
-  const wrongOption = selected.next === a ? b : a;
+  // Compare by shape+color since objects can't be compared by reference
+  const isNextA = selected.next.shape === a.shape && selected.next.color === a.color;
+  const wrongOption = isNextA ? b : a;
   options.push(wrongOption);
 
   // Add a random third option from another set
-  const otherSet = patternSets.filter(s => s[0] !== a && s[1] !== a)[0];
+  const otherSet = patternSets.filter(s =>
+    !(s[0].shape === a.shape && s[0].color === a.color) &&
+    !(s[1].shape === a.shape && s[1].color === a.color)
+  )[0];
   if (otherSet) {
     options.push(otherSet[Math.floor(Math.random() * 2)]);
   }
