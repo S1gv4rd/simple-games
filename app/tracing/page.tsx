@@ -135,29 +135,31 @@ export default function TracingGame() {
     };
   };
 
-  const handleStart = (e: React.TouchEvent | React.MouseEvent) => {
+  const handleStart = useCallback((e: React.TouchEvent | React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     playClickSound();
     setIsDrawing(true);
     const { x, y } = getCoordinates(e);
     setCurrentPath(`${x},${y}`);
-  };
+  }, []);
 
-  const handleMove = (e: React.TouchEvent | React.MouseEvent) => {
+  const handleMove = useCallback((e: React.TouchEvent | React.MouseEvent) => {
     if (!isDrawing) return;
     e.preventDefault();
+    e.stopPropagation();
     const { x, y } = getCoordinates(e);
     setCurrentPath((prev) => `${prev} ${x},${y}`);
-  };
+  }, [isDrawing]);
 
-  const handleEnd = () => {
+  const handleEnd = useCallback(() => {
     if (!isDrawing) return;
     setIsDrawing(false);
     if (currentPath) {
       setPaths((prev) => [...prev, currentPath]);
       setCurrentPath("");
     }
-  };
+  }, [isDrawing, currentPath]);
 
   const handleDone = useCallback(() => {
     // Simple check: if user drew something, count it as success
@@ -261,12 +263,16 @@ export default function TracingGame() {
       </h1>
 
       {/* Canvas */}
-      <div className="bg-white rounded-3xl shadow-lg p-2 mb-4">
+      <div
+        className="bg-white rounded-3xl shadow-lg p-2 mb-4"
+        style={{ touchAction: "none" }}
+      >
         <canvas
           ref={canvasRef}
           width={canvasSize.width}
           height={canvasSize.height}
-          className="rounded-2xl touch-none"
+          className="rounded-2xl"
+          style={{ touchAction: "none" }}
           onMouseDown={handleStart}
           onMouseMove={handleMove}
           onMouseUp={handleEnd}
