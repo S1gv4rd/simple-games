@@ -5,6 +5,8 @@ import BackButton from "@/components/BackButton";
 import Celebration from "@/components/Celebration";
 import { playCorrectSound, playWrongSound } from "@/lib/sounds";
 
+const TOTAL_ROUNDS = 10;
+
 const letterData: Record<string, { word: string; emoji: string }> = {
   A: { word: "Apple", emoji: "🍎" },
   B: { word: "Ball", emoji: "⚽" },
@@ -55,10 +57,13 @@ function generateQuestion() {
 }
 
 export default function AlphabetGame() {
+  const [started, setStarted] = useState(false);
   const [question, setQuestion] = useState(generateQuestion);
   const [showCelebration, setShowCelebration] = useState(false);
   const [shake, setShake] = useState(false);
   const [score, setScore] = useState(0);
+  const [round, setRound] = useState(1);
+  const [gameComplete, setGameComplete] = useState(false);
 
   const { word, emoji } = letterData[question.targetLetter];
 
@@ -76,15 +81,78 @@ export default function AlphabetGame() {
 
   const handleCelebrationComplete = useCallback(() => {
     setShowCelebration(false);
+    if (round >= TOTAL_ROUNDS) {
+      setGameComplete(true);
+    } else {
+      setRound((r) => r + 1);
+      setQuestion(generateQuestion());
+    }
+  }, [round]);
+
+  const startGame = () => {
+    setStarted(true);
     setQuestion(generateQuestion());
-  }, []);
+    setScore(0);
+    setRound(1);
+    setGameComplete(false);
+  };
+
+  // Start screen
+  if (!started) {
+    return (
+      <main className="min-h-screen p-6 flex flex-col items-center justify-center bg-gradient-to-b from-blue/10 to-green/10">
+        <BackButton />
+        <span className="text-8xl mb-6">🔤</span>
+        <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-blue">
+          Alphabet Game
+        </h1>
+        <p className="text-xl md:text-2xl text-center mb-8 text-foreground/70">
+          Match letters to words!
+        </p>
+        <button
+          onClick={startGame}
+          className="game-button bg-blue text-white text-2xl font-bold py-6 px-12 rounded-2xl shadow-lg"
+        >
+          Start Playing!
+        </button>
+      </main>
+    );
+  }
+
+  // Game complete screen
+  if (gameComplete) {
+    return (
+      <main className="min-h-screen p-6 flex flex-col items-center justify-center bg-gradient-to-b from-blue/10 to-green/10">
+        <BackButton />
+        <span className="text-8xl mb-6 celebrate">🎉</span>
+        <h1 className="text-4xl md:text-5xl font-bold text-center mb-4 text-blue">
+          Amazing!
+        </h1>
+        <p className="text-2xl md:text-3xl text-center mb-2 text-foreground">
+          You got <span className="text-blue font-bold">{score}</span> out of <span className="font-bold">{TOTAL_ROUNDS}</span>!
+        </p>
+        <div className="text-5xl my-6">
+          {score === TOTAL_ROUNDS ? "🌟🌟🌟" : score >= 7 ? "🌟🌟" : score >= 4 ? "🌟" : "💪"}
+        </div>
+        <button
+          onClick={() => setStarted(false)}
+          className="game-button bg-blue text-white text-2xl font-bold py-6 px-12 rounded-2xl shadow-lg mt-4"
+        >
+          Play Again
+        </button>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen p-6 flex flex-col items-center justify-center bg-gradient-to-b from-blue/10 to-green/10">
       <BackButton />
       <Celebration show={showCelebration} onComplete={handleCelebrationComplete} />
 
-      <div className="text-right w-full max-w-2xl mb-4">
+      <div className="flex justify-between w-full max-w-2xl mb-4">
+        <span className="bg-white/80 text-foreground px-4 py-2 rounded-full font-bold text-lg">
+          Round {round}/{TOTAL_ROUNDS}
+        </span>
         <span className="bg-yellow text-foreground px-4 py-2 rounded-full font-bold text-lg">
           ⭐ {score}
         </span>
