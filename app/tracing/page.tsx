@@ -6,10 +6,9 @@ import GameComplete from "@/components/GameComplete";
 import BackButton from "@/components/BackButton";
 import Celebration from "@/components/Celebration";
 import { playCorrectSound } from "@/lib/sounds";
-import { GAME_COLORS } from "@/lib/gameUtils";
+import { GAME_COLORS, TOTAL_ROUNDS, GAME_GRADIENTS } from "@/lib/gameUtils";
 
-const TOTAL_ROUNDS = 10;
-const GRADIENT = "from-purple/10 to-pink/10";
+const GRADIENT = GAME_GRADIENTS.tracing;
 
 const tracingItems = [
   { char: "A", color: GAME_COLORS.red },
@@ -256,7 +255,7 @@ export default function TracingGame() {
   }
 
   return (
-    <main className="min-h-screen p-4 flex flex-col items-center justify-center bg-gradient-to-b from-purple/10 to-pink/10">
+    <main className={`min-h-screen p-4 flex flex-col items-center justify-center bg-gradient-to-b ${GRADIENT}`}>
       <BackButton />
       <Celebration show={showCelebration} onComplete={handleCelebrationComplete} />
 

@@ -6,10 +6,9 @@ import GameComplete from "@/components/GameComplete";
 import GameLayout from "@/components/GameLayout";
 import ScoreDisplay from "@/components/ScoreDisplay";
 import { useGameState } from "@/hooks/useGameState";
-import { shuffleArray } from "@/lib/gameUtils";
+import { shuffleArray, TOTAL_ROUNDS, GAME_GRADIENTS } from "@/lib/gameUtils";
 
-const TOTAL_ROUNDS = 10;
-const GRADIENT = "from-blue/10 to-green/10";
+const GRADIENT = GAME_GRADIENTS.alphabet;
 
 const letterData: Record<string, { word: string; color: string }> = {
   A: { word: "Apple", color: "#ef476f" },

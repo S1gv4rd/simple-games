@@ -5,10 +5,10 @@ import BackButton from "@/components/BackButton";
 import Celebration from "@/components/Celebration";
 import StartScreen from "@/components/StartScreen";
 import { playCorrectSound, playWrongSound, playClickSound } from "@/lib/sounds";
-import { shuffleArray } from "@/lib/gameUtils";
+import { shuffleArray, GAME_GRADIENTS } from "@/lib/gameUtils";
 
 const TOTAL_PAIRS = 6;
-const GRADIENT = "from-orange/10 to-yellow/10";
+const GRADIENT = GAME_GRADIENTS.matching;
 
 // Card patterns for matching - using emojis
 const cardEmojis = ["🐶", "🐱", "🐰", "🐻", "🦊", "🐸", "🐵", "🦁", "🐯", "🐨", "🐷", "🐮"];

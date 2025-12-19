@@ -1,5 +1,20 @@
 import { ShapeType } from "@/components/ShapeRenderer";
 
+// Default number of rounds per game
+export const TOTAL_ROUNDS = 10;
+
+// Game-specific gradients
+export const GAME_GRADIENTS = {
+  alphabet: "from-blue/10 to-green/10",
+  colors: "from-pink/10 to-yellow/10",
+  counting: "from-purple/10 to-pink/10",
+  matching: "from-orange/10 to-yellow/10",
+  numbers: "from-red/10 to-pink/10",
+  patterns: "from-purple/10 to-blue/10",
+  sorting: "from-green/10 to-blue/10",
+  tracing: "from-purple/10 to-pink/10",
+} as const;
+
 // Common colors used across games
 export const GAME_COLORS = {
   red: "#ef476f",

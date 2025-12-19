@@ -6,10 +6,9 @@ import GameComplete from "@/components/GameComplete";
 import GameLayout from "@/components/GameLayout";
 import ScoreDisplay from "@/components/ScoreDisplay";
 import { useGameState } from "@/hooks/useGameState";
-import { shuffleArray, randomItem } from "@/lib/gameUtils";
+import { shuffleArray, randomItem, TOTAL_ROUNDS, GAME_GRADIENTS } from "@/lib/gameUtils";
 
-const TOTAL_ROUNDS = 10;
-const GRADIENT = "from-purple/10 to-blue/10";
+const GRADIENT = GAME_GRADIENTS.patterns;
 
 // Pattern sets using emoji pairs
 const patternSets: [string, string][] = [

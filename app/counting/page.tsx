@@ -5,10 +5,9 @@ import BackButton from "@/components/BackButton";
 import Celebration from "@/components/Celebration";
 import ScoreDisplay from "@/components/ScoreDisplay";
 import { playCorrectSound, playWrongSound } from "@/lib/sounds";
-import { shuffleArray, randomItem, randomInRange } from "@/lib/gameUtils";
+import { shuffleArray, randomItem, randomInRange, TOTAL_ROUNDS, GAME_GRADIENTS } from "@/lib/gameUtils";
 
-const TOTAL_ROUNDS = 10;
-const GRADIENT = "from-purple/10 to-pink/10";
+const GRADIENT = GAME_GRADIENTS.counting;
 
 const ANIMALS = ["🐶", "🐱", "🐰", "🐻", "🦊", "🐸", "🐵", "🐷", "🐮", "🦁", "🐯", "🐨"];
 
@@ -56,9 +55,12 @@ export default function CountingGame() {
   const [score, setScore] = useState(0);
   const [round, setRound] = useState(1);
   const [gameComplete, setGameComplete] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleAnswer = useCallback((answer: number) => {
+    if (isProcessing) return;
     if (answer === question.count) {
+      setIsProcessing(true);
       playCorrectSound();
       setShowCelebration(true);
       setScore((s) => s + 1);
@@ -67,10 +69,11 @@ export default function CountingGame() {
       setShake(true);
       setTimeout(() => setShake(false), 500);
     }
-  }, [question.count]);
+  }, [question.count, isProcessing]);
 
   const handleCelebrationComplete = useCallback(() => {
     setShowCelebration(false);
+    setIsProcessing(false);
     if (round >= TOTAL_ROUNDS) {
       setGameComplete(true);
     } else {

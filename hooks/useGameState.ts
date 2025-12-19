@@ -16,21 +16,26 @@ export function useGameState<T>({ totalRounds, generateQuestion }: UseGameStateO
   const [score, setScore] = useState(0);
   const [round, setRound] = useState(1);
   const [gameComplete, setGameComplete] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleCorrect = useCallback(() => {
+    if (isProcessing) return;
+    setIsProcessing(true);
     playCorrectSound();
     setShowCelebration(true);
     setScore((s) => s + 1);
-  }, []);
+  }, [isProcessing]);
 
   const handleWrong = useCallback(() => {
+    if (isProcessing) return;
     playWrongSound();
     setShake(true);
     setTimeout(() => setShake(false), 500);
-  }, []);
+  }, [isProcessing]);
 
   const handleCelebrationComplete = useCallback(() => {
     setShowCelebration(false);
+    setIsProcessing(false);
     if (round >= totalRounds) {
       setGameComplete(true);
     } else {
@@ -62,6 +67,7 @@ export function useGameState<T>({ totalRounds, generateQuestion }: UseGameStateO
     round,
     gameComplete,
     totalRounds,
+    isProcessing,
     // Actions
     handleCorrect,
     handleWrong,

@@ -6,10 +6,9 @@ import GameComplete from "@/components/GameComplete";
 import GameLayout from "@/components/GameLayout";
 import ScoreDisplay from "@/components/ScoreDisplay";
 import { useGameState } from "@/hooks/useGameState";
-import { shuffleArray, GAME_COLORS } from "@/lib/gameUtils";
+import { shuffleArray, GAME_COLORS, TOTAL_ROUNDS, GAME_GRADIENTS } from "@/lib/gameUtils";
 
-const TOTAL_ROUNDS = 10;
-const GRADIENT = "from-pink/10 to-yellow/10";
+const GRADIENT = GAME_GRADIENTS.colors;
 
 type GameMode = "colors" | "shapes";
 
